@@ -96,7 +96,7 @@ app.use('/api/chat', rateLimit({
 }));
 
 // O backend é SOMENTE API — o frontend é servido separado
-// (node tests/serve.js → http://localhost:8321).
+// (node frontend/scripts/serve.js → http://localhost:8321).
 
 app.use('/api', chatRoutes);
 
