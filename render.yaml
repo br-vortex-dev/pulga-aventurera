@@ -1,0 +1,49 @@
+# ============================================================
+#  Render Blueprint — SOMENTE o backend (repo liz-backend)
+#  Neste repo a raiz JÁ é a pasta do backend.
+#  Env vars com "sync: false" você preenche no painel do Render
+#  (segredos — nunca commite valores reais).
+# ============================================================
+
+services:
+  - type: web
+    name: liz-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Origens aceitas pela API (ajuste quando o frontend tiver URL fixa)
+      - key: CORS_ORIGIN
+        value: http://localhost:8321,http://127.0.0.1:8321
+      # Postgres da Supabase (Settings > Database > Connection string)
+      - key: DATABASE_URL
+        sync: false
+      # Provedor de IA (os mesmos valores do backend/.env local)
+      - key: AI_API_URL
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        sync: false
+      - key: AI_MAX_TOKENS
+        sync: false
+      # Firebase (tela de login) — mesmos valores do backend/.env local
+      - key: FIREBASE_API_KEY
+        sync: false
+      - key: FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: FIREBASE_APP_ID
+        sync: false
+      # Cliente OAuth Web (Google Auth Platform) p/ login Google sem popup
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
