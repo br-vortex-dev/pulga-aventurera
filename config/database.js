@@ -18,6 +18,21 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const dialect = (process.env.DB_DIALECT || 'postgres').toLowerCase();
 
 function createSequelize() {
+  // Nuvem (Render, Supabase...) costuma entregar uma única string de conexão.
+  if (process.env.DATABASE_URL) {
+    const dialectOptions = {};
+    if (process.env.DB_SSL !== 'false') {
+      // Hosts gerenciados exigem TLS; só desliga com DB_SSL=false explícito.
+      dialectOptions.ssl = { require: true, rejectUnauthorized: false };
+    }
+    return new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      logging: false,
+      dialectOptions,
+      pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
+    });
+  }
+
   if (dialect === 'sqlite') {
     const storage = process.env.DB_STORAGE === ':memory:'
       ? ':memory:'

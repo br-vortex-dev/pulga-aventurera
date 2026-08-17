@@ -28,7 +28,8 @@ Message.belongsTo(Conversation, { foreignKey: 'conversationId' });
 
 /* ---------- CORS ----------
  * Produção: defina CORS_ORIGIN com as origens exatas (csv).
- * Dev sem CORS_ORIGIN: libera apenas localhost em qualquer porta. */
+ * Dev sem CORS_ORIGIN: libera localhost em qualquer porta e
+ * origem 'null' (página aberta direto por file://). */
 function buildCorsOptions() {
   const raw = process.env.CORS_ORIGIN;
   if (raw) {
@@ -43,9 +44,10 @@ function buildCorsOptions() {
   }
   return {
     origin(origin, cb) {
-      if (!origin || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-        return cb(null, true);
-      }
+      const devOrigin = !origin ||
+        origin === 'null' ||
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+      if (devOrigin) return cb(null, true);
       return cb(new Error('Origem não permitida'));
     },
   };
@@ -57,7 +59,21 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
-app.use(helmet());
+// Helmet com CSP ajustada: a interface carrega o SDK do Firebase (gstatic),
+// chama as APIs do Google (googleapis/firebaseapp) e usa Google Fonts.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'script-src': ["'self'", "'unsafe-inline'", 'https://www.gstatic.com', 'https://apis.google.com'],
+      'connect-src': ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.firebaseapp.com', 'https://*.firebaseio.com'],
+      'frame-src': ["'self'", 'https://*.firebaseapp.com', 'https://accounts.google.com', 'https://*.google.com'],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com'],
+      'img-src': ["'self'", 'data:', 'https:'],
+    },
+  },
+}));
 app.use(cors(buildCorsOptions()));
 app.use(express.json({ limit: '1mb' }));
 
@@ -78,6 +94,9 @@ app.use('/api/chat', rateLimit({
   legacyHeaders: false,
   message: { message: 'Limite de mensagens por minuto atingido.' },
 }));
+
+// O backend é SOMENTE API — o frontend é servido separado
+// (node tests/serve.js → http://localhost:8321).
 
 app.use('/api', chatRoutes);
 

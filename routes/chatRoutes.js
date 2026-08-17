@@ -5,6 +5,7 @@
  *  negócio aqui.
  *
  *  GET    /api/health
+ *  GET    /api/firebase-config
  *  GET    /api/conversations
  *  POST   /api/conversations
  *  GET    /api/conversations/:id
@@ -56,6 +57,27 @@ router.get('/health', (req, res) => {
     uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
   });
+});
+
+/* ---------- Firebase (config pública do cliente) ----------
+ * O config web do Firebase é público por design (a segurança vem das
+ * Security Rules). As chaves moram no .env do backend e são servidas
+ * aqui pra tela de login inicializar o SDK. */
+
+router.get('/firebase-config', (req, res) => {
+  const cfg = {
+    apiKey: process.env.FIREBASE_API_KEY || '',
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.FIREBASE_APP_ID || '',
+    googleOAuthClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || '',
+  };
+  if (!cfg.apiKey || !cfg.projectId) {
+    throw new ApiError(503, 'Firebase não configurado — preencha as variáveis FIREBASE_* no backend/.env');
+  }
+  res.json(cfg);
 });
 
 /* ---------- Conversas ---------- */
