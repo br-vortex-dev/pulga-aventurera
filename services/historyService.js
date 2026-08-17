@@ -49,16 +49,27 @@ function serializeConversation(conv, lastMessage) {
 /* ---------- Operações ---------- */
 
 /**
- * Lista conversas paginadas.
+ * Busca uma conversa garantindo que ela pertence ao usuário.
+ * Conversa de outro usuário → 404 (não vazar que existe).
+ */
+async function findOwnedConversation(id, userId) {
+  const conv = await Conversation.findOne({ where: { id, userId } });
+  if (!conv) throw new ApiError(404, 'Conversa não encontrada');
+  return conv;
+}
+
+/**
+ * Lista conversas paginadas DO USUÁRIO.
  * Ordenação: fixadas primeiro, depois pela mais recente atividade.
  * Inclui a última mensagem de cada conversa (preview) via include separado —
  * uma query por página, não N+1 por conversa.
  */
-async function listConversations(pageRaw, limitRaw) {
+async function listConversations(userId, pageRaw, limitRaw) {
   const page = clampPage(pageRaw);
   const limit = clampLimit(limitRaw, 20, 100);
 
   const { count, rows } = await Conversation.findAndCountAll({
+    where: { userId },
     order: [
       ['pinned', 'DESC'],
       ['updatedAt', 'DESC'],
@@ -91,9 +102,11 @@ async function listConversations(pageRaw, limitRaw) {
 
 /**
  * Busca uma conversa pelo id, com todas as mensagens em ordem cronológica.
- * 404 quando não existe — o cliente decide como tratar.
+ * 404 quando não existe ou pertence a outro usuário.
  */
-async function getConversation(id) {
+async function getConversation(id, userId) {
+  await findOwnedConversation(id, userId); // garante posse antes de ler
+
   const conv = await Conversation.findByPk(id, {
     include: [{
       model: Message,
@@ -118,9 +131,8 @@ async function getConversation(id) {
 /**
  * Mensagens de uma conversa com paginação (histórico longo).
  */
-async function getMessages(conversationId, pageRaw, limitRaw) {
-  const conv = await Conversation.findByPk(conversationId);
-  if (!conv) throw new ApiError(404, 'Conversa não encontrada');
+async function getMessages(conversationId, userId, pageRaw, limitRaw) {
+  await findOwnedConversation(conversationId, userId);
 
   const page = clampPage(pageRaw);
   const limit = clampLimit(limitRaw, 50, 100);
@@ -144,4 +156,5 @@ module.exports = {
   listConversations,
   getConversation,
   getMessages,
+  findOwnedConversation,
 };

@@ -6,14 +6,14 @@
  *
  *  GET    /api/health
  *  GET    /api/firebase-config
- *  GET    /api/conversations
- *  POST   /api/conversations
- *  GET    /api/conversations/:id
- *  PUT    /api/conversations/:id
- *  DELETE /api/conversations/:id
- *  PUT    /api/conversations/:id/pin
- *  GET    /api/conversations/:id/messages
- *  POST   /api/chat/send
+ *  GET    /api/conversations          (auth)
+ *  POST   /api/conversations          (auth)
+ *  GET    /api/conversations/:id      (auth)
+ *  PUT    /api/conversations/:id      (auth)
+ *  DELETE /api/conversations/:id      (auth)
+ *  PUT    /api/conversations/:id/pin  (auth)
+ *  GET    /api/conversations/:id/messages (auth)
+ *  POST   /api/chat/send              (auth)
  * ============================================================ */
 
 const express = require('express');
@@ -21,6 +21,7 @@ const Conversation = require('../models/conversation');
 const Message = require('../models/message');
 const chatService = require('../services/chatService');
 const historyService = require('../services/historyService');
+const firebase = require('../config/firebase');
 
 const { ApiError, MAX_TITLE_LENGTH } = chatService;
 
@@ -80,16 +81,54 @@ router.get('/firebase-config', (req, res) => {
   res.json(cfg);
 });
 
-/* ---------- Conversas ---------- */
+/* ---------- Autenticação ----------
+ * Toda rota de dados exige um ID token válido do Firebase Auth
+ * (header "Authorization: Bearer <token>").
+ * Sem credencial de Service Account fora de produção, degrada
+ * para um usuário local — dev/testes continuam funcionando sem
+ * configurar nada. Em produção (Render) exige sempre. */
+
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+async function requireAuth(req, res, next) {
+  if (!firebase.isConfigured()) {
+    if (IS_PRODUCTION) {
+      return next(new ApiError(503, 'Autenticação indisponível no servidor'));
+    }
+    req.user = { uid: 'dev-local' }; // dev/testes sem Service Account
+    return next();
+  }
+
+  const header = req.headers.authorization || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if (!match) return next(new ApiError(401, 'Faça login para continuar'));
+
+  try {
+    const decoded = await firebase.verifyIdToken(match[1]);
+    req.user = {
+      uid: decoded.uid,
+      email: decoded.email || null,
+      name: decoded.name || null,
+    };
+    return next();
+  } catch (err) {
+    return next(new ApiError(401, 'Sessão inválida ou expirada — faça login novamente'));
+  }
+}
+
+/* ---------- Conversas (autenticadas) ---------- */
+
+router.use('/conversations', requireAuth);
+router.use('/chat', requireAuth);
 
 router.get('/conversations', asyncHandler(async (req, res) => {
-  const result = await historyService.listConversations(req.query.page, req.query.limit);
+  const result = await historyService.listConversations(req.user.uid, req.query.page, req.query.limit);
   res.json(result);
 }));
 
 router.post('/conversations', asyncHandler(async (req, res) => {
   const title = parseTitle(req.body);
-  const conv = await Conversation.create({ title });
+  const conv = await Conversation.create({ title, userId: req.user.uid });
   res.status(201).json({
     id: conv.id,
     title: conv.title,
@@ -101,7 +140,7 @@ router.post('/conversations', asyncHandler(async (req, res) => {
 
 router.get('/conversations/:id', asyncHandler(async (req, res) => {
   requireUuid(req.params.id);
-  const conv = await historyService.getConversation(req.params.id);
+  const conv = await historyService.getConversation(req.params.id, req.user.uid);
   res.json(conv);
 }));
 
@@ -109,8 +148,7 @@ router.put('/conversations/:id', asyncHandler(async (req, res) => {
   requireUuid(req.params.id);
   const title = parseTitle(req.body);
 
-  const conv = await Conversation.findByPk(req.params.id);
-  if (!conv) throw new ApiError(404, 'Conversa não encontrada');
+  const conv = await historyService.findOwnedConversation(req.params.id, req.user.uid);
 
   conv.title = title;
   await conv.save();
@@ -127,8 +165,7 @@ router.put('/conversations/:id', asyncHandler(async (req, res) => {
 router.delete('/conversations/:id', asyncHandler(async (req, res) => {
   requireUuid(req.params.id);
 
-  const conv = await Conversation.findByPk(req.params.id);
-  if (!conv) throw new ApiError(404, 'Conversa não encontrada');
+  const conv = await historyService.findOwnedConversation(req.params.id, req.user.uid);
 
   // Deleta mensagens primeiro — determinístico em qualquer dialeto.
   await Message.destroy({ where: { conversationId: conv.id } });
@@ -145,8 +182,7 @@ router.put('/conversations/:id/pin', asyncHandler(async (req, res) => {
     throw new ApiError(400, 'pinned deve ser booleano');
   }
 
-  const conv = await Conversation.findByPk(req.params.id);
-  if (!conv) throw new ApiError(404, 'Conversa não encontrada');
+  const conv = await historyService.findOwnedConversation(req.params.id, req.user.uid);
 
   conv.pinned = pinned;
   await conv.save();
@@ -158,7 +194,7 @@ router.put('/conversations/:id/pin', asyncHandler(async (req, res) => {
 
 router.get('/conversations/:id/messages', asyncHandler(async (req, res) => {
   requireUuid(req.params.id);
-  const result = await historyService.getMessages(req.params.id, req.query.page, req.query.limit);
+  const result = await historyService.getMessages(req.params.id, req.user.uid, req.query.page, req.query.limit);
   res.json(result);
 }));
 
@@ -171,7 +207,7 @@ router.post('/chat/send', asyncHandler(async (req, res) => {
     message: body.message,
     mode: body.mode ?? null,
     model: body.model ?? 'liz-3',
-  });
+  }, req.user.uid);
   res.json(result);
 }));
 

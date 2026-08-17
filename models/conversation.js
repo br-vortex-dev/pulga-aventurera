@@ -1,6 +1,7 @@
 /* ============================================================
  *  Liz Chat Backend — models/conversation.js
- *  Model da conversa (thread do chat).
+ *  Model da conversa (thread do chat). Cada conversa pertence
+ *  a um usuário (userId = uid do Firebase Auth).
  * ============================================================ */
 
 const { DataTypes } = require('sequelize');
@@ -11,6 +12,10 @@ const Conversation = sequelize.define('Conversation', {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
+  },
+  userId: {
+    type: DataTypes.STRING(64),
+    allowNull: true, // conversas antigas (pré-auth) ficam órfãs/invisíveis
   },
   title: {
     type: DataTypes.STRING(200),
@@ -26,6 +31,7 @@ const Conversation = sequelize.define('Conversation', {
   indexes: [
     { fields: ['updatedAt'] },
     { fields: ['pinned'] },
+    { fields: ['userId'] },
   ],
 });
 

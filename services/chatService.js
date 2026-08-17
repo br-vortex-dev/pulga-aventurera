@@ -85,14 +85,14 @@ function validateSendInput({ conversationId, message, mode, model }) {
   return { conversationId: conversationId || null, message: cleanMessage, mode: mode || null, model: cleanModel };
 }
 
-/** Busca a conversa pelo id ou cria uma nova com título automático. */
-async function ensureConversation(conversationId, firstMessage) {
+/** Busca a conversa pelo id (validando o dono) ou cria uma nova com título automático. */
+async function ensureConversation(conversationId, firstMessage, userId) {
   if (conversationId) {
-    const conv = await Conversation.findByPk(conversationId);
+    const conv = await Conversation.findOne({ where: { id: conversationId, userId } });
     if (!conv) throw new ApiError(404, 'Conversa não encontrada');
     return conv;
   }
-  return Conversation.create({ title: autoTitle(firstMessage) });
+  return Conversation.create({ title: autoTitle(firstMessage), userId });
 }
 
 /** Monta o contexto (últimas mensagens) para enviar à IA. */
@@ -276,10 +276,10 @@ function demoReply(userText, mode) {
  *
  * Retorna: { conversationId, userMessage, assistantMessage, demo }
  */
-async function sendMessage(rawInput) {
+async function sendMessage(rawInput, userId) {
   const { conversationId, message, mode, model } = validateSendInput(rawInput);
 
-  const conversation = await ensureConversation(conversationId, message);
+  const conversation = await ensureConversation(conversationId, message, userId);
 
   const userMessage = await Message.create({
     conversationId: conversation.id,

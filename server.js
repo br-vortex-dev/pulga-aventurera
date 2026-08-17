@@ -120,12 +120,32 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
+/* ---------- Migração leve ----------
+ * O Neon já tem a tabela 'conversations' criada antes do userId;
+ * sequelize.sync() não altera tabelas existentes, então garantimos
+ * a coluna aqui (idempotente — roda em todo boot sem efeito colateral). */
+async function ensureSchema() {
+  const dialect = sequelize.getDialect();
+  if (dialect === 'postgres') {
+    await sequelize.query('ALTER TABLE conversations ADD COLUMN IF NOT EXISTS "userId" VARCHAR(64);');
+    await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations ("userId");');
+  } else if (dialect === 'sqlite') {
+    // SQLite não tem IF NOT EXISTS pra ADD COLUMN — "duplicada" é o caso normal.
+    try {
+      await sequelize.query('ALTER TABLE conversations ADD COLUMN userId VARCHAR(64);');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+  }
+}
+
 /* ---------- Boot ---------- */
 async function start() {
   const port = Number(process.env.PORT || 3000);
 
   await sequelize.authenticate();
   await sequelize.sync();
+  await ensureSchema();
 
   const server = app.listen(port, () => {
     const dialect = sequelize.getDialect();
