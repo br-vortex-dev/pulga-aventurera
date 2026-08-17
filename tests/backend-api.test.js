@@ -15,15 +15,21 @@ const path = require('node:path');
 const PORT = 3211;
 const BASE = `http://localhost:${PORT}/api`;
 
+// Instância extra: simula produção SEM credencial — rotas de dados
+// devem recusar (503) enquanto o health continua público.
+const PORT_AUTH = 3212;
+const BASE_AUTH = `http://localhost:${PORT_AUTH}/api`;
+
 let child;
+let childAuth;
 let createdConvId;
 let sendConvId;
 
-async function waitForServer(timeoutMs = 25000) {
+async function waitForServer(base, timeoutMs = 25000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const res = await fetch(`${BASE}/health`);
+      const res = await fetch(`${base}/health`);
       if (res.ok) return;
     } catch (e) { /* ainda subindo */ }
     await new Promise((r) => setTimeout(r, 250));
@@ -51,16 +57,38 @@ before(async () => {
       DB_STORAGE: ':memory:',
       AI_API_URL: '',
       CORS_ORIGIN: '',
+      // Testes nunca exigem token real — isola de envs vazadas do shell.
+      NODE_ENV: 'test',
+      FIREBASE_SERVICE_ACCOUNT: '',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   child.stdout.on('data', (d) => process.stdout.write('[server] ' + d));
   child.stderr.on('data', (d) => process.stderr.write('[server:err] ' + d));
-  await waitForServer();
+
+  childAuth = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
+    env: {
+      ...process.env,
+      PORT: String(PORT_AUTH),
+      DB_DIALECT: 'sqlite',
+      DB_STORAGE: ':memory:',
+      AI_API_URL: '',
+      CORS_ORIGIN: '',
+      NODE_ENV: 'production', // produção sem credencial → lockout
+      FIREBASE_SERVICE_ACCOUNT: '',
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  childAuth.stdout.on('data', (d) => process.stdout.write('[server-auth] ' + d));
+  childAuth.stderr.on('data', (d) => process.stderr.write('[server-auth:err] ' + d));
+
+  await waitForServer(BASE);
+  await waitForServer(BASE_AUTH);
 });
 
 after(() => {
   if (child && !child.killed) child.kill('SIGTERM');
+  if (childAuth && !childAuth.killed) childAuth.kill('SIGTERM');
 });
 
 /* ---------- 1. Health (caminho normal) ---------- */
@@ -254,4 +282,20 @@ test('Rota desconhecida retorna 404 padronizado', async () => {
   const { status, data } = await api('GET', '/rota-que-nao-existe');
   assert.strictEqual(status, 404);
   assert.ok(data.message);
+});
+
+/* ---------- 7. Lockout: produção sem credencial recusa dados ---------- */
+test('produção sem Service Account: health público, dados recusam (503)', async () => {
+  const health = await fetch(`${BASE_AUTH}/health`);
+  assert.strictEqual(health.status, 200);
+
+  const conv = await fetch(`${BASE_AUTH}/conversations`);
+  assert.strictEqual(conv.status, 503);
+
+  const send = await fetch(`${BASE_AUTH}/chat/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: 'oi' }),
+  });
+  assert.strictEqual(send.status, 503);
 });
