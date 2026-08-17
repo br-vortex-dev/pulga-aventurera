@@ -99,6 +99,22 @@ test('GET /health responde ok=true', async () => {
   assert.strictEqual(data.service, 'liz-chat-backend');
 });
 
+test('Origem não permitida não derruba o servidor (sem 500, sem header CORS)', async () => {
+  const res = await fetch(`${BASE}/health`, {
+    headers: { Origin: 'https://evil-site-test.com' },
+  });
+  assert.notStrictEqual(res.status, 500);
+  // Sem o header, o navegador bloqueia a leitura — resposta nunca chega no JS do site malicioso.
+  assert.strictEqual(res.headers.get('access-control-allow-origin'), null);
+
+  // Origem permitida (localhost) continua recebendo o header.
+  const ok = await fetch(`${BASE}/health`, {
+    headers: { Origin: 'http://localhost:8321' },
+  });
+  assert.strictEqual(ok.status, 200);
+  assert.strictEqual(ok.headers.get('access-control-allow-origin'), 'http://localhost:8321');
+});
+
 /* ---------- 2. CRUD de conversa (caminho normal) ---------- */
 test('POST /conversations cria conversa com título', async () => {
   const { status, data } = await api('POST', '/conversations', { title: 'Conversa de teste' });

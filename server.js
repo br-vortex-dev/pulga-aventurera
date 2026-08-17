@@ -29,7 +29,10 @@ Message.belongsTo(Conversation, { foreignKey: 'conversationId' });
 /* ---------- CORS ----------
  * Produção: defina CORS_ORIGIN com as origens exatas (csv).
  * Dev sem CORS_ORIGIN: libera localhost em qualquer porta e
- * origem 'null' (página aberta direto por file://). */
+ * origem 'null' (página aberta direto por file://).
+ * Origem não permitida NÃO gera erro — apenas responde sem os
+ * headers CORS (o navegador bloqueia a leitura; erro viraria 500
+ * e qualquer um poderia derrubar o serviço com um Origin falso). */
 function buildCorsOptions() {
   const raw = process.env.CORS_ORIGIN;
   if (raw) {
@@ -38,7 +41,7 @@ function buildCorsOptions() {
       origin(origin, cb) {
         // Requisições sem Origin (curl, apps nativos) passam.
         if (!origin || allowed.includes(origin)) return cb(null, true);
-        return cb(new Error('Origem não permitida'));
+        return cb(null, false);
       },
     };
   }
@@ -48,7 +51,7 @@ function buildCorsOptions() {
         origin === 'null' ||
         /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
       if (devOrigin) return cb(null, true);
-      return cb(new Error('Origem não permitida'));
+      return cb(null, false);
     },
   };
 }
