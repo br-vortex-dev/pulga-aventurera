@@ -31,7 +31,8 @@ const Conversation = sequelize.define('Conversation', {
   indexes: [
     { fields: ['updatedAt'] },
     { fields: ['pinned'] },
-    { fields: ['userId'] },
+    // O índice de userId é criado no ensureSchema() do server.js —
+    // sync() tentaria criá-lo antes da coluna existir em bancos antigos.
   ],
 });
 

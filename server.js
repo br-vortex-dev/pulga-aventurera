@@ -136,6 +136,7 @@ async function ensureSchema() {
     } catch (err) {
       if (!/duplicate column/i.test(err.message)) throw err;
     }
+    await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations (userId);');
   }
 }
 
