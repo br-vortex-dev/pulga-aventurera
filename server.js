@@ -15,6 +15,7 @@ const rateLimit = require('express-rate-limit');
 const sequelize = require('./config/database');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
+const Attachment = require('./models/attachment');
 const chatRoutes = require('./routes/chatRoutes');
 const { ApiError } = require('./services/chatService');
 
@@ -116,8 +117,10 @@ app.use((err, req, res, next) => {
   const status = err.status && Number.isInteger(err.status) ? err.status : 500;
   const isApiError = err instanceof ApiError;
   const message = isApiError ? err.message : (status < 500 ? err.message : 'Erro interno do servidor');
-  if (status >= 500) {
-    // Log server-side sim, resposta limpa pro cliente.
+  if (status >= 500 && !isApiError) {
+    // ApiError 5xx (ex.: Firebase indisponível) é esperado e já tem mensagem
+    // segura pro cliente — só loga erro inesperado. Log server-side sim,
+    // resposta limpa pro cliente.
     console.error('[liz-backend] erro não tratado:', err);
   }
   res.status(status).json({ message });

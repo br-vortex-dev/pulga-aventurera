@@ -52,4 +52,18 @@ async function verifyIdToken(idToken) {
   return admin.auth().verifyIdToken(idToken);
 }
 
-module.exports = { isConfigured, verifyIdToken };
+/**
+ * Cria um usuário no Firebase Auth pelo Admin SDK. É o caminho do
+ * cadastro com e-mail/senha: a política de senha é validada na rota
+ * ANTES de chegar aqui, garantindo que ela vale no servidor também
+ * (e não só no JavaScript do navegador).
+ * Devolve o uid criado; erros do Firebase (ex.: auth/email-already-exists)
+ * são re-lançados com o code original pra rota traduzir pro HTTP.
+ */
+async function createAuthUser({ email, password, displayName }) {
+  if (!configured) throw new Error('Firebase Admin não configurado');
+  const user = await admin.auth().createUser({ email, password, displayName });
+  return user.uid;
+}
+
+module.exports = { isConfigured, verifyIdToken, createAuthUser };

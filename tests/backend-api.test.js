@@ -315,3 +315,91 @@ test('produção sem Service Account: health público, dados recusam (503)', asy
   });
   assert.strictEqual(send.status, 503);
 });
+
+/* ---------- 8. Signup: política de senha imposta no servidor ---------- */
+test('POST /auth/signup rejeita senha fora da política (validação server-side)', async () => {
+  // Menos de 8 caracteres
+  let r = await api('POST', '/auth/signup', { name: 'Teste', email: 't@exemplo.com', password: 'ab1' });
+  assert.strictEqual(r.status, 400);
+  assert.ok(/mínimo/i.test(r.data.message));
+
+  // Sem número nem símbolo
+  r = await api('POST', '/auth/signup', { name: 'Teste', email: 't@exemplo.com', password: 'senhaletrassozinhas' });
+  assert.strictEqual(r.status, 400);
+  assert.ok(/número ou símbolo/i.test(r.data.message));
+
+  // Senha gigante
+  r = await api('POST', '/auth/signup', { name: 'Teste', email: 't@exemplo.com', password: 'a1'.repeat(100) });
+  assert.strictEqual(r.status, 400);
+
+  // E-mail inválido
+  r = await api('POST', '/auth/signup', { name: 'Teste', email: 'nao-e-email', password: 'senha123' });
+  assert.strictEqual(r.status, 400);
+
+  // Nome ausente
+  r = await api('POST', '/auth/signup', { name: '  ', email: 't@exemplo.com', password: 'senha123' });
+  assert.strictEqual(r.status, 400);
+});
+
+test('POST /auth/signup sem Service Account recusa (503) — nunca cria conta sem validação server-side', async () => {
+  const r = await api('POST', '/auth/signup', { name: 'Teste', email: 't@exemplo.com', password: 'senha123' });
+  assert.strictEqual(r.status, 503);
+
+  // Em produção o comportamento é o mesmo.
+  const prod = await fetch(`${BASE_AUTH}/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Teste', email: 't@exemplo.com', password: 'senha123' }),
+  });
+  assert.strictEqual(prod.status, 503);
+});
+
+/* ---------- 9. Uploads: storage privado por usuário ---------- */
+test('POST /chat/upload salva e GET /uploads/:id devolve o conteúdo íntegro', async () => {
+  const boundary = '----LizTest' + Date.now();
+  const content = Buffer.from('foto de teste 123');
+  const body = Buffer.concat([
+    Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="foto.txt"\r\nContent-Type: text/plain\r\n\r\n`),
+    content,
+    Buffer.from(`\r\n--${boundary}--\r\n`),
+  ]);
+
+  const res = await fetch(`${BASE}/chat/upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+    body,
+  });
+  const data = await res.json();
+  assert.strictEqual(res.status, 201);
+  assert.strictEqual(data.name, 'foto.txt');
+  assert.strictEqual(data.size, content.length);
+  assert.ok(data.url.startsWith('/api/uploads/'));
+
+  // Download autenticado devolve o mesmo byte a byte.
+  const dl = await fetch(BASE.replace('/api', '') + data.url);
+  assert.strictEqual(dl.status, 200);
+  assert.ok(dl.headers.get('content-type').startsWith('text/plain'));
+  const buf = Buffer.from(await dl.arrayBuffer());
+  assert.ok(buf.equals(content), 'conteúdo íntegro no download');
+
+  // Lista do usuário inclui o arquivo.
+  const list = await api('GET', '/uploads');
+  assert.strictEqual(list.status, 200);
+  assert.ok(list.data.uploads.some((u) => u.id === data.id));
+
+  // DELETE remove metadado e conteúdo.
+  const del = await api('DELETE', `/uploads/${data.id}`);
+  assert.strictEqual(del.status, 200);
+  const gone = await fetch(BASE.replace('/api', '') + data.url);
+  assert.strictEqual(gone.status, 404);
+});
+
+test('Upload sem arquivo retorna 400 e id malformado 400/404', async () => {
+  const empty = await fetch(`${BASE}/chat/upload`, { method: 'POST' });
+  assert.strictEqual(empty.status, 400);
+
+  assert.strictEqual((await api('GET', '/uploads/nao-e-uuid')).status, 400);
+  assert.strictEqual((await api('DELETE', '/uploads/nao-e-uuid')).status, 400);
+  const ghost = '00000000-0000-4000-8000-000000000000';
+  assert.strictEqual((await api('GET', `/uploads/${ghost}`)).status, 404);
+});
