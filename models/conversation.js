@@ -26,6 +26,18 @@ const Conversation = sequelize.define('Conversation', {
     allowNull: false,
     defaultValue: false,
   },
+  // Resumo gerado por IA quando a conversa cresce — substitui as
+  // mensagens antigas no contexto enviado à IA (memória sem inchar).
+  summary: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  // Quantas mensagens existiam quando o resumo foi gerado (staleness).
+  summaryCount: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
 }, {
   tableName: 'conversations',
   indexes: [

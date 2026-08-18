@@ -18,6 +18,9 @@
  *  DELETE /api/conversations/:id      (auth)
  *  PUT    /api/conversations/:id/pin  (auth)
  *  GET    /api/conversations/:id/messages (auth)
+ *  POST   /api/conversations/:id/messages (auth)
+ *  GET    /api/memory                 (auth)
+ *  PUT    /api/memory                 (auth)
  *  POST   /api/chat/send              (auth)
  * ============================================================ */
 
@@ -30,6 +33,7 @@ const Message = require('../models/message');
 const Attachment = require('../models/attachment');
 const chatService = require('../services/chatService');
 const historyService = require('../services/historyService');
+const memoryService = require('../services/memoryService');
 const storage = require('../config/storage');
 const firebase = require('../config/firebase');
 
@@ -389,6 +393,23 @@ router.post('/conversations/:id/messages', asyncHandler(async (req, res) => {
     role: body.role,
     file: body.file,
   }, req.user.uid);
+  res.json(result);
+}));
+
+/* ---------- Ficha de memória do usuário ---------- */
+
+router.get('/memory', requireAuth, asyncHandler(async (req, res) => {
+  const content = await memoryService.getUserMemory(req.user.uid);
+  res.json({ content });
+}));
+
+router.put('/memory', requireAuth, asyncHandler(async (req, res) => {
+  const raw = (req.body || {}).content;
+  if (typeof raw !== 'string') throw new ApiError(400, 'content é obrigatório');
+  if (raw.trim().length > memoryService.MAX_MEMORY_LENGTH) {
+    throw new ApiError(400, `Memória muito longa (máx. ${memoryService.MAX_MEMORY_LENGTH} caracteres)`);
+  }
+  const result = await memoryService.setUserMemory(req.user.uid, raw);
   res.json(result);
 }));
 

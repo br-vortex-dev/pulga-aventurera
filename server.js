@@ -16,6 +16,7 @@ const sequelize = require('./config/database');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
 const Attachment = require('./models/attachment');
+const UserMemory = require('./models/userMemory'); // registra o model pro sync()
 const chatRoutes = require('./routes/chatRoutes');
 const { ApiError } = require('./services/chatService');
 
@@ -137,6 +138,9 @@ async function ensureSchema() {
     await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations ("userId");');
     // Anexo da mensagem (metadados do arquivo) — coluna nova, idempotente.
     await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file JSONB;');
+    // Memória: resumo da conversa + contador de mensagens no resumo.
+    await sequelize.query('ALTER TABLE conversations ADD COLUMN IF NOT EXISTS summary TEXT;');
+    await sequelize.query('ALTER TABLE conversations ADD COLUMN IF NOT EXISTS "summaryCount" INTEGER DEFAULT 0;');
   } else if (dialect === 'sqlite') {
     // SQLite não tem IF NOT EXISTS pra ADD COLUMN — "duplicada" é o caso normal.
     try {
@@ -147,6 +151,16 @@ async function ensureSchema() {
     await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations (userId);');
     try {
       await sequelize.query('ALTER TABLE messages ADD COLUMN file TEXT;');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+    try {
+      await sequelize.query('ALTER TABLE conversations ADD COLUMN summary TEXT;');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+    try {
+      await sequelize.query('ALTER TABLE conversations ADD COLUMN summaryCount INTEGER DEFAULT 0;');
     } catch (err) {
       if (!/duplicate column/i.test(err.message)) throw err;
     }

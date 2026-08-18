@@ -446,3 +446,24 @@ test('POST /conversations/:id/messages persiste anexo e histórico devolve', asy
   const ghost = '00000000-0000-4000-8000-000000000000';
   assert.strictEqual((await api('POST', `/conversations/${ghost}/messages`, { content: 'oi' })).status, 404);
 });
+
+/* ---------- 11. Ficha de memória do usuário ---------- */
+test('GET/PUT /memory faz roundtrip e valida limites', async () => {
+  // Começa devolvendo uma string (vazia ou já preenchida).
+  const initial = await api('GET', '/memory');
+  assert.strictEqual(initial.status, 200);
+  assert.strictEqual(typeof initial.data.content, 'string');
+
+  // Salva e lê de volta.
+  const saved = await api('PUT', '/memory', { content: 'Me chamo Teste, gosto de respostas curtas' });
+  assert.strictEqual(saved.status, 200);
+  assert.strictEqual(saved.data.content, 'Me chamo Teste, gosto de respostas curtas');
+
+  const after = await api('GET', '/memory');
+  assert.strictEqual(after.status, 200);
+  assert.strictEqual(after.data.content, 'Me chamo Teste, gosto de respostas curtas');
+
+  // Validações: sem content 400, acima de 4000 caracteres 400.
+  assert.strictEqual((await api('PUT', '/memory', {})).status, 400);
+  assert.strictEqual((await api('PUT', '/memory', { content: 'x'.repeat(4001) })).status, 400);
+});
