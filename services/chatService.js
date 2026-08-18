@@ -95,6 +95,69 @@ async function ensureConversation(conversationId, firstMessage, userId) {
   return Conversation.create({ title: autoTitle(firstMessage), userId });
 }
 
+/**
+ * Sanitiza os metadados do arquivo anexado à mensagem.
+ * Só a referência (uploadId) e os dados de exibição — o conteúdo
+ * em si mora no storage privado (B2), nunca no banco.
+ */
+function sanitizeFile(file) {
+  if (file === null || file === undefined) return null;
+  if (typeof file !== 'object' || Array.isArray(file)) {
+    throw new ApiError(400, 'file inválido');
+  }
+  if (typeof file.uploadId !== 'string' || !UUID_RE.test(file.uploadId)) {
+    throw new ApiError(400, 'file.uploadId inválido');
+  }
+  return {
+    uploadId: file.uploadId,
+    name: typeof file.name === 'string' ? file.name.slice(0, 200) : '',
+    type: typeof file.type === 'string' ? file.type.slice(0, 100) : '',
+    size: Number.isFinite(Number(file.size)) ? Math.min(Number(file.size), 100 * 1024 * 1024) : 0,
+  };
+}
+
+/**
+ * Persiste uma mensagem isolada numa conversa existente — ex.: o anexo
+ * de arquivo (que não passa pelo /chat/send). role aceita 'user' ou
+ * 'assistant' (respostas locais do app); qualquer outra vira 'user'.
+ */
+async function addMessage(conversationId, rawInput, userId) {
+  if (typeof conversationId !== 'string' || !UUID_RE.test(conversationId)) {
+    throw new ApiError(400, 'conversationId inválido');
+  }
+  const { content, role, file } = rawInput || {};
+  const cleanRole = role === 'assistant' ? 'assistant' : 'user';
+  const cleanContent = typeof content === 'string'
+    ? content.trim().slice(0, MAX_MESSAGE_LENGTH)
+    : '';
+  const cleanFile = sanitizeFile(file);
+  if (!cleanContent && !cleanFile) {
+    throw new ApiError(400, 'Mensagem vazia');
+  }
+
+  const conversation = await Conversation.findOne({ where: { id: conversationId, userId } });
+  if (!conversation) throw new ApiError(404, 'Conversa não encontrada');
+
+  const message = await Message.create({
+    conversationId: conversation.id,
+    role: cleanRole,
+    content: cleanContent,
+    file: cleanFile,
+  });
+
+  // Toca updatedAt pra conversa subir no histórico.
+  conversation.changed('updatedAt', true);
+  await conversation.save();
+
+  return {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    file: message.file || undefined,
+    createdAt: message.createdAt,
+  };
+}
+
 /** Monta o contexto (últimas mensagens) para enviar à IA. */
 async function buildContext(conversationId) {
   const recent = await Message.findAll({
@@ -331,6 +394,7 @@ async function sendMessage(rawInput, userId) {
 
 module.exports = {
   sendMessage,
+  addMessage,
   autoTitle,
   ApiError,
   MAX_TITLE_LENGTH,

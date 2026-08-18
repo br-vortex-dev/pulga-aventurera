@@ -29,6 +29,7 @@ function serializeMessage(m) {
     id: m.id,
     role: m.role,
     content: m.content,
+    file: m.file || undefined,
     createdAt: m.createdAt,
   };
 }

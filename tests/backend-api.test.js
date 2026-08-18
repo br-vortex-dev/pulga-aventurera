@@ -403,3 +403,46 @@ test('Upload sem arquivo retorna 400 e id malformado 400/404', async () => {
   const ghost = '00000000-0000-4000-8000-000000000000';
   assert.strictEqual((await api('GET', `/uploads/${ghost}`)).status, 404);
 });
+
+/* ---------- 10. Mensagem com anexo na nuvem ---------- */
+test('POST /conversations/:id/messages persiste anexo e histórico devolve', async () => {
+  // Upload primeiro → uploadId válido pra anexar à mensagem.
+  const boundary = '----LizTest' + Date.now();
+  const content = Buffer.from('imagem de anexo');
+  const body = Buffer.concat([
+    Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="anexo.png"\r\nContent-Type: image/png\r\n\r\n`),
+    content,
+    Buffer.from(`\r\n--${boundary}--\r\n`),
+  ]);
+  const up = await fetch(`${BASE}/chat/upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+    body,
+  });
+  const upload = await up.json();
+  assert.strictEqual(up.status, 201);
+
+  const conv = await api('POST', '/conversations', { title: 'Com anexo' });
+  assert.strictEqual(conv.status, 201);
+
+  const add = await api('POST', `/conversations/${conv.data.id}/messages`, {
+    content: '',
+    role: 'user',
+    file: { uploadId: upload.id, name: 'anexo.png', size: content.length, type: 'image/png' },
+  });
+  assert.strictEqual(add.status, 200);
+  assert.strictEqual(add.data.file.uploadId, upload.id);
+
+  // Histórico devolve a mensagem com o anexo.
+  const msgs = await api('GET', `/conversations/${conv.data.id}/messages`);
+  assert.strictEqual(msgs.status, 200);
+  assert.ok(msgs.data.messages.some((m) => m.file && m.file.uploadId === upload.id));
+
+  // Validações: uploadId inválido 400, mensagem vazia 400, conversa alheia 404.
+  const bad = await api('POST', `/conversations/${conv.data.id}/messages`, { file: { uploadId: 'nao-uuid' } });
+  assert.strictEqual(bad.status, 400);
+  const emptyMsg = await api('POST', `/conversations/${conv.data.id}/messages`, { content: '' });
+  assert.strictEqual(emptyMsg.status, 400);
+  const ghost = '00000000-0000-4000-8000-000000000000';
+  assert.strictEqual((await api('POST', `/conversations/${ghost}/messages`, { content: 'oi' })).status, 404);
+});

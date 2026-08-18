@@ -135,6 +135,8 @@ async function ensureSchema() {
   if (dialect === 'postgres') {
     await sequelize.query('ALTER TABLE conversations ADD COLUMN IF NOT EXISTS "userId" VARCHAR(64);');
     await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations ("userId");');
+    // Anexo da mensagem (metadados do arquivo) — coluna nova, idempotente.
+    await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file JSONB;');
   } else if (dialect === 'sqlite') {
     // SQLite não tem IF NOT EXISTS pra ADD COLUMN — "duplicada" é o caso normal.
     try {
@@ -143,6 +145,11 @@ async function ensureSchema() {
       if (!/duplicate column/i.test(err.message)) throw err;
     }
     await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations (userId);');
+    try {
+      await sequelize.query('ALTER TABLE messages ADD COLUMN file TEXT;');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
   }
 }
 

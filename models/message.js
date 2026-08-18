@@ -28,6 +28,12 @@ const Message = sequelize.define('Message', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  // Metadados do arquivo anexado (o conteúdo mora no storage — B2).
+  // Formato: { uploadId, name, size, type }.
+  file: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
 }, {
   tableName: 'messages',
   indexes: [

@@ -380,6 +380,18 @@ router.get('/conversations/:id/messages', asyncHandler(async (req, res) => {
   res.json(result);
 }));
 
+// Mensagem isolada (ex.: anexo de arquivo, que não passa pelo /chat/send).
+router.post('/conversations/:id/messages', asyncHandler(async (req, res) => {
+  requireUuid(req.params.id);
+  const body = req.body || {};
+  const result = await chatService.addMessage(req.params.id, {
+    content: body.content,
+    role: body.role,
+    file: body.file,
+  }, req.user.uid);
+  res.json(result);
+}));
+
 /* ---------- Chat ---------- */
 
 router.post('/chat/send', asyncHandler(async (req, res) => {
