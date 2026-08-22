@@ -29,6 +29,9 @@ function serializeMessage(m) {
     id: m.id,
     role: m.role,
     content: m.content,
+    demo: m.demo === true,
+    images: Array.isArray(m.images) ? m.images : [],
+    webResults: Array.isArray(m.webResults) ? m.webResults : [],
     file: m.file || undefined,
     createdAt: m.createdAt,
   };

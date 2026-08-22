@@ -10,6 +10,8 @@ const Conversation = require('../models/conversation');
 const Message = require('../models/message');
 const { callAI, ApiError } = require('./aiClient');
 const memoryService = require('./memoryService');
+const imageService = require('./imageService');
+const webSearchService = require('./webSearchService');
 
 /* ---------- Constantes de validação ---------- */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,7 +24,9 @@ const CONTEXT_WINDOW = 10; // últimas N mensagens enviadas à IA
 const SYSTEM_PROMPT =
   'Você é Liz, uma assistente de IA brasileira criada pela Liz Ai Studios. ' +
   'Responda sempre em português do Brasil, de forma direta, precisa e útil. ' +
-  'Use markdown leve quando ajudar na leitura (listas, blocos de código).';
+  'Use markdown leve quando ajudar na leitura (listas, blocos de código). ' +
+  'Quando receber imagens reais no campo de imagens, descreva a origem sem inventar links. ' +
+  'Não invente URLs de imagens: só use imagens quando elas forem fornecidas pelo sistema.';
 
 /* ---------- Utilitários ---------- */
 
@@ -104,7 +108,7 @@ async function addMessage(conversationId, rawInput, userId) {
   if (typeof conversationId !== 'string' || !UUID_RE.test(conversationId)) {
     throw new ApiError(400, 'conversationId inválido');
   }
-  const { content, role, file } = rawInput || {};
+  const { content, role, file, demo } = rawInput || {};
   const cleanRole = role === 'assistant' ? 'assistant' : 'user';
   const cleanContent = typeof content === 'string'
     ? content.trim().slice(0, MAX_MESSAGE_LENGTH)
@@ -121,6 +125,7 @@ async function addMessage(conversationId, rawInput, userId) {
     conversationId: conversation.id,
     role: cleanRole,
     content: cleanContent,
+    demo: demo === true,
     file: cleanFile,
   });
 
@@ -129,10 +134,11 @@ async function addMessage(conversationId, rawInput, userId) {
   await conversation.save();
 
   return {
-    id: message.id,
-    role: message.role,
-    content: message.content,
-    file: message.file || undefined,
+      id: message.id,
+      role: message.role,
+      content: message.content,
+      demo: message.demo === true,
+      file: message.file || undefined,
     createdAt: message.createdAt,
   };
 }
@@ -242,12 +248,33 @@ async function sendMessage(rawInput, userId) {
     conversationId: conversation.id,
     role: 'user',
     content: message,
+    demo: false,
   });
 
   let content;
   let demo = false;
+  let images = [];
+  let webResults = [];
+  const imageIntent = imageService.isImageRequest(message);
+  const webIntent = webSearchService.isWebRequest(message);
 
-  if (process.env.AI_API_URL) {
+  if (imageIntent?.kind === 'search' || webIntent) {
+    const [foundImages, foundWeb] = await Promise.all([
+      imageIntent?.kind === 'search' ? imageService.searchOpenverse(imageIntent.query) : Promise.resolve([]),
+      webIntent ? webSearchService.searchWeb(webIntent.query) : Promise.resolve([]),
+    ]);
+    images = foundImages;
+    webResults = foundWeb;
+    const pieces = [];
+    if (webResults.length) pieces.push(`Consultei a internet e encontrei ${webResults.length} resultado(s).`);
+    if (images.length) pieces.push(`Também encontrei ${images.length} imagem(ns) com licença aberta.`);
+    content = pieces.length
+      ? pieces.join(' ') + ' Confira os links e as fontes abaixo.'
+      : 'Não encontrei resultados para essa busca. Tente usar outras palavras ou uma descrição mais específica.';
+  } else if (imageIntent?.kind === 'generate') {
+    images = await imageService.generateImage(imageIntent.prompt, userId);
+    content = 'Criei esta imagem para você. Se quiser, posso tentar outra versão com mudanças no estilo, nas cores ou no enquadramento.';
+  } else if (process.env.AI_API_URL) {
     const context = await buildContext(conversation.id);
     content = await callAI(
       await buildPromptMessages(userId, conversation, context),
@@ -262,6 +289,9 @@ async function sendMessage(rawInput, userId) {
     conversationId: conversation.id,
     role: 'assistant',
     content,
+    demo,
+    images,
+    webResults,
   });
 
   // Atualiza updatedAt pra conversa subir no histórico.
@@ -283,6 +313,9 @@ async function sendMessage(rawInput, userId) {
       id: assistantMessage.id,
       role: assistantMessage.role,
       content: assistantMessage.content,
+      demo: assistantMessage.demo === true,
+      images: assistantMessage.images || [],
+      webResults: assistantMessage.webResults || [],
       createdAt: assistantMessage.createdAt,
     },
     demo,

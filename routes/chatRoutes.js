@@ -391,6 +391,7 @@ router.post('/conversations/:id/messages', asyncHandler(async (req, res) => {
   const result = await chatService.addMessage(req.params.id, {
     content: body.content,
     role: body.role,
+    demo: body.demo === true,
     file: body.file,
   }, req.user.uid);
   res.json(result);

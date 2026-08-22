@@ -28,6 +28,22 @@ const Message = sequelize.define('Message', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  // Indica que a resposta veio do modo demonstração, sem provedor de IA.
+  demo: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  // Imagens devolvidas pela IA: referências privadas ou URLs com origem.
+  images: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
+  // Links e trechos normalizados de sites consultados pela Liz.
+  webResults: {
+    type: DataTypes.JSON,
+    allowNull: true,
+  },
   // Metadados do arquivo anexado (o conteúdo mora no storage — B2).
   // Formato: { uploadId, name, size, type }.
   file: {

@@ -138,6 +138,10 @@ async function ensureSchema() {
     await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations ("userId");');
     // Anexo da mensagem (metadados do arquivo) — coluna nova, idempotente.
     await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS file JSONB;');
+    // Marca respostas geradas sem provedor de IA.
+    await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS demo BOOLEAN NOT NULL DEFAULT FALSE;');
+    await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS images JSONB;');
+    await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS "webResults" JSONB;');
     // Memória: resumo da conversa + contador de mensagens no resumo.
     await sequelize.query('ALTER TABLE conversations ADD COLUMN IF NOT EXISTS summary TEXT;');
     await sequelize.query('ALTER TABLE conversations ADD COLUMN IF NOT EXISTS "summaryCount" INTEGER DEFAULT 0;');
@@ -151,6 +155,21 @@ async function ensureSchema() {
     await sequelize.query('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations (userId);');
     try {
       await sequelize.query('ALTER TABLE messages ADD COLUMN file TEXT;');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+    try {
+      await sequelize.query('ALTER TABLE messages ADD COLUMN demo INTEGER NOT NULL DEFAULT 0;');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+    try {
+      await sequelize.query('ALTER TABLE messages ADD COLUMN images TEXT;');
+    } catch (err) {
+      if (!/duplicate column/i.test(err.message)) throw err;
+    }
+    try {
+      await sequelize.query('ALTER TABLE messages ADD COLUMN webResults TEXT;');
     } catch (err) {
       if (!/duplicate column/i.test(err.message)) throw err;
     }
