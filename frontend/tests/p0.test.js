@@ -12,6 +12,18 @@ function assert(name, cond, detail) {
   else { fail++; console.log('  FAIL  ' + name + (detail ? ' — ' + detail : '')); }
 }
 
+/* Fonte completa do chat: entrypoint (js/chat.js) + módulos parciais (js/chat/*.js) */
+function readChatSource() {
+  const dir = path.join(__dirname, '..', 'js', 'chat');
+  const parts = [fs.readFileSync(path.join(__dirname, '..', 'js', 'chat.js'), 'utf8')];
+  if (fs.existsSync(dir)) {
+    for (const f of fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort()) {
+      parts.push(fs.readFileSync(path.join(dir, f), 'utf8'));
+    }
+  }
+  return parts.join('\n');
+}
+
 /* Carrega data.js num sandbox com localStorage/window simulados */
 function loadDataJs() {
   const store = {};
@@ -89,7 +101,7 @@ console.log('\n[4] Bug 5 — XSS no float panel');
 
 console.log('\n[5] Bug 4 — lock de geração + parar geração');
 {
-  const chat = fs.readFileSync(path.join(__dirname, '..', 'js', 'chat.js'), 'utf8');
+  const chat = readChatSource();
   assert('sendMessage bloqueia durante geração', /sendMessage\(\)\s*\{[\s\S]{0,180}isGenerating/.test(chat));
   assert('submit vira stopGeneration durante geração', chat.includes('if (this.isGenerating) { this.stopGeneration(); return; }'));
   assert('_streamReply com try/finally + _endGeneration', /async _streamReply[\s\S]*?finally\s*\{\s*this\._endGeneration\(\);/.test(chat));
@@ -109,7 +121,7 @@ console.log('\n[6] Bugs 2/3 — edição de mensagem');
   const uichat = fs.readFileSync(path.join(__dirname, '..', 'js', 'ui-chat.js'), 'utf8');
   assert('editar em qualquer msg (sem condição de última)', !uichat.includes('index === LizChat.messages.length - 1'));
   assert('edição usa conteúdo bruto (não innerText)', uichat.includes('LizChat.messages[msgIndex]'));
-  const chat = fs.readFileSync(path.join(__dirname, '..', 'js', 'chat.js'), 'utf8');
+  const chat = readChatSource();
   assert('openSampleConversation removido do chat.js', !chat.includes('openSampleConversation'));
   assert('openConversationById presente', chat.includes('openConversationById(id)'));
 }

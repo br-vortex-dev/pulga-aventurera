@@ -1,6 +1,6 @@
 // Bump obrigatório a cada mudança em assets: o cache é cache-first.
-// v6: bump para forçar atualização em navegadores com SW antigo em cache (corrige assets obsoletos, ex: selects brancos).
-const CACHE_NAME = 'liz-chat-v6';
+// v8: mural.js e settings.js divididos em módulos js/mural/* e js/settings/*.
+const CACHE_NAME = 'liz-chat-v8';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -27,8 +27,21 @@ const STATIC_ASSETS = [
   './js/ui-chat.js',
   './js/ui-panels.js',
   './js/ui-gallery.js',
+  './js/mural/mural-viewers.js',
+  './js/mural/mural-render.js',
+  './js/mural/mural-context.js',
+  './js/mural/mural-upload.js',
+  './js/mural/mural-events.js',
   './js/mural.js',
+  './js/settings/settings-pages.js',
+  './js/settings/settings-bind.js',
   './js/settings.js',
+  './js/chat/chat-events.js',
+  './js/chat/chat-conversations.js',
+  './js/chat/chat-generation.js',
+  './js/chat/chat-attachments.js',
+  './js/chat/chat-actions.js',
+  './js/chat/chat-intro.js',
   './js/chat.js',
 ];
 
