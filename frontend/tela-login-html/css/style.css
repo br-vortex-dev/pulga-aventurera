@@ -2704,50 +2704,100 @@ html.theme-morphing .theme-toggle-thumb {
 }
 
 @media (max-width: 480px) {
-  .brand { padding: 14px 16px 8px; gap: 6px; }
-  .crown { width: 84px; }
-  .crown-secret-box { top: 96px; padding: 10px 12px; gap: 4px; }
+  /* ==========================================================
+     CELULAR — layout "tela cheia estilo app":
+     sem cartão de vidro; marca imersiva no topo, campos grandes
+     soltos na tela e botões sociais empilhados em largura total.
+     ========================================================== */
+  .brand { padding: 22px 16px 6px; gap: 8px; }
+  .crown { width: 96px; }
+  .crown-secret-box { top: 108px; padding: 10px 12px; gap: 4px; }
   .brand-text { width: 100%; height: auto; }
-  .brand-title { font-size: 1.7rem; margin-bottom: 3px; }
-  .brand-tagline { font-size: 0.8rem; height: 3em; line-height: 1.4; padding: 0 4px; }
+  .brand-title { font-size: 2rem; margin-bottom: 4px; }
+  .brand-tagline { font-size: 0.85rem; height: 3em; line-height: 1.4; padding: 0 4px; }
   .bg-deco { opacity: 0.2; }
-  .form-side { padding: 8px 14px 16px; }
-  .login-card { padding: 18px 16px; border-radius: 18px; }
-  .card-header { margin-bottom: 14px; }
-  .card-header h2 { font-size: 1.3rem; }
-  .card-header p { font-size: 0.85rem; }
-  /* Inputs com 16px evitam o zoom automático do iOS ao focar */
-  .field { margin-bottom: 12px; }
-  .field label { font-size: 0.72rem; margin-bottom: 5px; }
-  .input-wrapper input { padding: 11px 14px 11px 42px; font-size: 1rem; min-height: 48px; }
-  .toggle-pw { width: 40px; height: 40px; }
-  .row-between { margin-bottom: 12px; }
-  .checkbox-label { font-size: 0.85rem; gap: 9px; }
-  .btn-login { padding: 13px; min-height: 50px; font-size: 1rem; }
-  .social-buttons { flex-direction: row; gap: 10px; }
-  .btn-social { padding: 11px; min-height: 46px; font-size: 0.88rem; }
-  .divider { margin: 14px 0; }
-  .signup-text { margin-top: 12px; font-size: 0.85rem; }
-  .login-footer { margin-top: 10px; }
-  .login-footer p { font-size: 0.68rem; }
+
+  .form-side { padding: 10px 18px 20px; }
+
+  /* Cartão vira transparente: o conteúdo vive direto na tela */
+  .login-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
+    padding: 0;
+  }
+  .card-header { margin-bottom: 18px; text-align: center; }
+  .card-header h2 { font-size: 1.45rem; }
+  .card-header p { font-size: 0.9rem; }
+
+  /* Campos grandes e soltos */
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 0.74rem; margin-bottom: 6px; }
+  .input-wrapper input {
+    padding: 13px 16px 13px 46px;
+    font-size: 1rem; /* 16px evita o zoom automático do iOS ao focar */
+    min-height: 52px;
+    border-radius: 16px;
+  }
+  .input-icon { left: 16px; }
+  .toggle-pw { width: 42px; height: 42px; right: 8px; }
+  .row-between { margin-bottom: 14px; }
+  .checkbox-label { font-size: 0.88rem; gap: 9px; }
+
+  .btn-login {
+    padding: 14px;
+    min-height: 52px;
+    font-size: 1.02rem;
+    border-radius: 16px;
+  }
+
+  /* Sociais empilhados em largura total */
+  .social-buttons { flex-direction: column; gap: 10px; }
+  .btn-social { width: 100%; min-height: 50px; font-size: 0.92rem; border-radius: 16px; }
+
+  .divider { margin: 16px 0; }
+  .signup-text { margin-top: 14px; font-size: 0.88rem; }
+  .login-footer { margin-top: 12px; }
+  .login-footer p { font-size: 0.7rem; }
   .footer-line { width: 20px; }
 
-  /* Register mobile */
-  .register-alt-container { padding: 8px; max-width: 100%; }
-  .register-alt-card { padding: 16px 16px; }
-  .register-alt-brand { padding: 12px 14px 8px; }
-  .register-alt-crown { width: 64px; }
-  .register-alt-brand-title { font-size: 1.7rem; }
-  .register-alt-tagline { font-size: 0.8rem; height: 3em; }
-  .register-alt-input-wrapper input { padding: 11px 14px 11px 42px; font-size: 1rem; min-height: 48px; }
-  .register-alt-input-icon { left: 13px; width: 17px; height: 17px; }
-  .register-alt-toggle-pw { width: 40px; height: 40px; }
+  /* Register mobile — mesmo tratamento tela cheia */
+  .register-alt-container { padding: 0; max-width: 100%; }
+  .register-alt-brand { padding: 22px 16px 6px; }
+  .register-alt-crown { width: 84px; }
+  .register-alt-brand-title { font-size: 2rem; }
+  .register-alt-tagline { font-size: 0.85rem; height: 3em; }
+  .register-alt-form-side { padding: 10px 18px 20px; overflow: visible; }
+  .register-alt-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-radius: 0;
+    padding: 0;
+  }
+  .register-alt-card-header { margin-bottom: 18px; text-align: center; }
+  .register-alt-card-header h2 { font-size: 1.45rem; }
+  .register-alt-card-header p { font-size: 0.9rem; }
+  .register-alt-field { margin-bottom: 12px; }
   .register-alt-field label { font-size: 0.74rem; }
-  .register-alt-btn { padding: 13px; min-height: 50px; font-size: 1rem; }
-  .register-alt-card-header h2 { font-size: 1.3rem; }
-  .register-alt-card-header p { font-size: 0.85rem; }
-  .register-alt-divider-text { margin: 12px 0 10px; }
-  .register-alt-btn-social { min-height: 46px; font-size: 0.88rem; }
+  .register-alt-input-wrapper input {
+    padding: 13px 16px 13px 46px;
+    font-size: 1rem;
+    min-height: 52px;
+    border-radius: 16px;
+  }
+  .register-alt-input-icon { left: 16px; width: 17px; height: 17px; }
+  .register-alt-toggle-pw { width: 42px; height: 42px; }
+  .register-alt-btn { padding: 14px; min-height: 52px; font-size: 1.02rem; border-radius: 16px; }
+  .register-alt-terms-notice { margin: 8px 0 10px; }
+  .register-alt-divider-text { margin: 16px 0 12px; }
+  .register-alt-social-buttons { flex-direction: column; gap: 10px; }
+  .register-alt-btn-social { width: 100%; min-height: 50px; font-size: 0.92rem; border-radius: 16px; }
 }
 
 @media (max-width: 820px) {
