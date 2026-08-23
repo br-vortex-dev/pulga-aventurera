@@ -2755,9 +2755,16 @@ html.theme-morphing .theme-toggle-thumb {
     border-radius: 14px;
   }
 
-  /* Sociais empilhados em largura total */
-  .social-buttons { flex-direction: column; gap: 8px; }
-  .btn-social { width: 100%; min-height: 46px; font-size: 0.88rem; border-radius: 14px; }
+  /* Sociais como bolinhas de ícone, lado a lado */
+  .social-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .btn-social {
+    flex: 0 0 auto;
+    width: 54px; height: 54px; min-height: 54px;
+    padding: 0; border-radius: 50%;
+    font-size: 0; /* esconde o texto; o ícone fica sozinho na bolinha */
+    gap: 0;
+  }
+  .btn-social svg { width: 22px; height: 22px; }
 
   .divider { margin: 11px 0; }
   .signup-text { margin-top: 10px; font-size: 0.85rem; }
@@ -2766,12 +2773,16 @@ html.theme-morphing .theme-toggle-thumb {
   .footer-line { width: 20px; }
 
   /* Register mobile — mesmo tratamento tela cheia */
+  /* sem padding na página: devolve 32px úteis de tela */
+  .register-alt-page { padding: 0; }
   .register-alt-container { padding: 0; max-width: 100%; }
-  .register-alt-brand { padding: 12px 16px 2px; }
-  .register-alt-crown { width: 64px; }
+  .register-alt-brand { padding: 8px 16px 0; }
+  .register-alt-crown { width: 56px; }
   .register-alt-brand-title { font-size: 1.7rem; }
+  /* altura fixa do desktop atrapalha no mobile: libera pro conteúdo */
+  .register-alt-brand-text { height: auto; min-height: 0; margin: 2px 0 6px; }
   .register-alt-tagline { font-size: 0.78rem; height: 2.4em; }
-  .register-alt-form-side { padding: 8px 18px 14px; overflow: visible; }
+  .register-alt-form-side { padding: 6px 18px 10px; overflow: visible; }
   .register-alt-card {
     background: transparent;
     border: none;
@@ -2781,10 +2792,10 @@ html.theme-morphing .theme-toggle-thumb {
     border-radius: 0;
     padding: 0;
   }
-  .register-alt-card-header { margin-bottom: 12px; text-align: center; }
+  .register-alt-card-header { margin-bottom: 10px; text-align: center; }
   .register-alt-card-header h2 { font-size: 1.3rem; }
   .register-alt-card-header p { font-size: 0.85rem; }
-  .register-alt-field { margin-bottom: 8px; }
+  .register-alt-field { margin-bottom: 6px; }
   .register-alt-field label { font-size: 0.7rem; }
   .register-alt-input-wrapper input {
     padding: 11px 16px 11px 46px;
@@ -2794,12 +2805,20 @@ html.theme-morphing .theme-toggle-thumb {
   }
   .register-alt-input-icon { left: 15px; width: 17px; height: 17px; }
   .register-alt-toggle-pw { width: 38px; height: 38px; }
-  .register-alt-btn { padding: 12px; min-height: 49px; font-size: 1rem; border-radius: 14px; margin-top: 8px; }
-  .register-alt-terms-notice { margin: 4px 0 6px; }
+  .register-alt-btn { padding: 12px; min-height: 49px; font-size: 1rem; border-radius: 14px; margin-top: 6px; }
+  .register-alt-terms-notice { margin: 2px 0 4px; }
   .register-alt-terms-notice p { font-size: 0.66rem; line-height: 1.25; }
-  .register-alt-divider-text { margin: 10px 0 8px; }
-  .register-alt-social-buttons { flex-direction: column; gap: 8px; }
-  .register-alt-btn-social { width: 100%; min-height: 46px; font-size: 0.88rem; border-radius: 14px; }
+  .register-alt-divider-text { margin: 8px 0 5px; }
+  .register-alt-social-buttons { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .register-alt-btn-social {
+    flex: 0 0 auto;
+    width: 48px; height: 48px; min-height: 48px;
+    padding: 0; border-radius: 50%;
+    font-size: 0;
+    gap: 0;
+  }
+  .register-alt-btn-social svg { width: 20px; height: 20px; }
+  .register-alt-login-text { margin-top: 8px; }
 }
 
 @media (max-width: 820px) {
