@@ -15,7 +15,7 @@ const LizAPI = {
     if (window.LIZ_API_BASE) return window.LIZ_API_BASE;
     const host = window.location.hostname;
     const isLocal = host === 'localhost' || host === '127.0.0.1';
-    if (!isLocal) return 'https://liz-api.onrender.com/api';
+    if (!isLocal) return 'https://liz-api-xgti.onrender.com/api';
     return 'http://localhost:3001/api';
   })(),
   // A Liz 3 é um modelo de raciocínio: pensa antes de responder.
