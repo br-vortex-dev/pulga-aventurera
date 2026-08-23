@@ -170,10 +170,6 @@
       <!-- Composer (input inferior flutuante) -->
       <form class="composer" id="chat-form" autocomplete="off">
         <div class="composer-inner">
-          <button class="composer-btn" id="attach-btn" type="button" aria-label="Anexar arquivo" title="Anexar">
-            <span></span>
-          </button>
-
           <textarea
             class="composer-input"
             id="chat-input"
@@ -181,8 +177,21 @@
             placeholder="Digite sua mensagem para a Liz..."
             aria-label="Mensagem"></textarea>
 
-          <!-- Seletor de Modelo (na caixa de mensagem) -->
-          <div class="model-selector" id="model-selector">
+          <!-- Toolbar: + / globo à esquerda, seletor de modelo + enviar à direita -->
+          <div class="composer-toolbar">
+            <div class="composer-tools composer-tools-left">
+              <button class="composer-btn" id="attach-btn" type="button" aria-label="Anexar arquivo" title="Anexar">
+                <span></span>
+              </button>
+
+              <button class="composer-btn" id="websearch-btn" type="button" aria-pressed="false" aria-label="Pesquisa na web" title="Pesquisa na web">
+                <span></span>
+              </button>
+            </div>
+
+            <div class="composer-tools composer-tools-right">
+              <!-- Seletor de Modelo (na caixa de mensagem) -->
+              <div class="model-selector" id="model-selector">
             <button class="model-selector-btn" id="model-selector-btn" type="button" aria-label="Escolher modelo" aria-expanded="false">
               <span class="model-selector-icon">
                 <svg viewBox="0 0 810 580" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><polygon points="0,520 160,520 60,140 270,310 400,80 530,310 740,140 640,520 800,520" fill="#b040d0" stroke="none" /></svg>
@@ -226,11 +235,13 @@
                 <span class="model-option-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
               </button>
             </div>
-          </div>
+              </div>
 
-          <button class="send-btn" id="send-btn" type="submit" aria-label="Enviar mensagem" disabled>
-            <span></span>
-          </button>
+              <button class="send-btn" id="send-btn" type="submit" aria-label="Enviar mensagem" disabled>
+                <span></span>
+              </button>
+            </div>
+          </div>
         </div>
       </form>
 

@@ -92,6 +92,14 @@ window.LizChatEvents = {
     // Anexar — abre seletor de arquivos
     el.attachBtn.addEventListener('click', () => LizUI.triggerFilePicker());
 
+    // Pesquisa na web — toggle visual (wiring com o backend vem depois)
+    if (el.websearchBtn) {
+      el.websearchBtn.addEventListener('click', () => {
+        const active = el.websearchBtn.classList.toggle('is-active');
+        el.websearchBtn.setAttribute('aria-pressed', String(active));
+      });
+    }
+
     // File input change
     el.fileInput.addEventListener('change', (e) => {
       if (e.target.files.length) {
@@ -284,6 +292,7 @@ window.LizChatEvents = {
       '.float-pill[data-action="mural"]',
       '.float-pill[data-action="settings"]',
       '#attach-btn',
+      '#websearch-btn',
       '#chat-input',
       '#send-btn',
     ];

@@ -113,10 +113,13 @@
 
   /* --- Composer --- */
   .composer { padding: 6px 10px calc(64px + env(safe-area-inset-bottom)); }
-  .composer-inner { padding: 4px 4px 4px 6px; }
-  .composer-input { font-size: 0.85rem; padding: 8px 6px; }
-  .composer-btn { width: 30px; height: 30px; }
-  .send-btn { width: 32px; height: 32px; }
+  .composer-inner { gap: 0; padding: 4px 8px 7px; }
+  .composer-input { font-size: 0.85rem; padding: 8px 2px 6px; }
+  .composer-toolbar { gap: 6px; }
+  .composer-tools-right { gap: 4px; }
+  .composer-btn { width: 32px; height: 32px; border-radius: 10px; }
+  .composer-btn svg { width: 17px; height: 17px; }
+  .send-btn { width: 34px; height: 34px; }
   .send-btn svg { width: 16px; height: 16px; }
 
   /* --- Search bar --- */

@@ -29,6 +29,7 @@ const LizUI = {
       input: document.getElementById('chat-input'),
       sendBtn: document.getElementById('send-btn'),
       attachBtn: document.getElementById('attach-btn'),
+      websearchBtn: document.getElementById('websearch-btn'),
       overlay: document.getElementById('overlay'),
       panels: {
         conversations: document.getElementById('panel-conversations'),
@@ -61,6 +62,7 @@ const LizUI = {
     const searchIco = document.querySelector('.panel-search-ico');
     if (searchIco) searchIco.innerHTML = LizConfig.icons.search;
     if (this.el.attachBtn) this.el.attachBtn.querySelector('span').innerHTML = LizConfig.icons.attach;
+    if (this.el.websearchBtn) this.el.websearchBtn.querySelector('span').innerHTML = LizConfig.icons.globe;
     if (this.el.sendBtn) this.el.sendBtn.querySelector('span').innerHTML = LizConfig.icons.send;
   },
 
