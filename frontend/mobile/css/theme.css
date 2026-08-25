@@ -116,7 +116,9 @@ html {
     animation: none !important;
   }
 
+  /* Exceção: a coroa da tela inicial continua subindo e descendo
+     mesmo com movimento reduzido */
   .empty-crown svg {
-    animation: none !important;
+    animation: floatSoft 3.5s ease-in-out infinite !important;
   }
 }
