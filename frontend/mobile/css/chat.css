@@ -31,7 +31,7 @@
   width: 100%;
   height: 100%;
   filter: drop-shadow(0 0 24px var(--brand-glow));
-  animation: floatSoft 4s ease-in-out infinite;
+  animation: floatSoft 3.5s ease-in-out infinite;
   position: relative;
   z-index: 1;
 }
