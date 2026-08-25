@@ -4,7 +4,10 @@
  * ============================================================ */
 
 // ===================== SUGESTÕES =====================
+// Os cards de sugestão (Código/Design/Erros/Ideias) foram removidos da UI;
+// as funções abaixo ficam com guarda pra não quebrar chamadas antigas.
 LizUI.renderSuggestions = function() {
+  if (!this.el.suggestions) return;
   this.el.suggestions.innerHTML = LizConfig.suggestions
     .map((s) => '<button class="suggestion" type="button" data-mode="' + this._esc(s.id) + '">' +
       '<span class="suggestion-ico">' + (LizConfig.icons[s.icon] || LizConfig.icons.sparkle) + '</span>' +
@@ -15,6 +18,7 @@ LizUI.renderSuggestions = function() {
 };
 
 LizUI.selectMode = function(modeId) {
+  if (!this.el.suggestions) return;
   if (this.activeMode === modeId) { this.clearMode(); return; }
   const mode = LizConfig.suggestions.find((s) => s.id === modeId);
   if (!mode) return;
@@ -29,7 +33,9 @@ LizUI.selectMode = function(modeId) {
 
 LizUI.clearMode = function() {
   this.activeMode = null;
-  this.el.suggestions.querySelectorAll('.suggestion').forEach((chip) => chip.classList.remove('is-active'));
+  if (this.el.suggestions) {
+    this.el.suggestions.querySelectorAll('.suggestion').forEach((chip) => chip.classList.remove('is-active'));
+  }
   this.setStatus('Nova conversa');
   this.el.input.placeholder = this._defaultPlaceholder;
   if (this.el.starters) this.el.starters.innerHTML = '';

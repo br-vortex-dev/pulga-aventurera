@@ -185,7 +185,7 @@ App._chat=function(){
     e.target.value='';
   });
 
-  $('#ch').querySelectorAll('.chip').forEach(c=>{
+  $('#ch')?.querySelectorAll('.chip').forEach(c=>{
     c.addEventListener('click',()=>{
       const texts={code:'Me ajude com código: ',design:'Me ajude com design: ',errors:'Analise este erro: ',ideas:'Me dê ideias: '};
       input.value=texts[c.dataset.m]||'';input.focus();send.disabled=false;

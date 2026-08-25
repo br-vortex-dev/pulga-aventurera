@@ -40,8 +40,6 @@ const LizChat = {
     // 1. Monta a UI
     LizUI.init();
     LizUI.renderBrand();
-    LizUI.renderSuggestions();
-    LizUI.renderStarters();
     LizUI.renderPanels();
     LizUI.initTheme();
     LizUI.bindMessageActions();
