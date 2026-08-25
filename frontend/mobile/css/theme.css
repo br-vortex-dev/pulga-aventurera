@@ -121,4 +121,13 @@ html {
   .empty-crown svg {
     animation: floatSoft 3.5s ease-in-out infinite !important;
   }
+
+  /* Exceção: as pílulas do menu da coroa continuam com a animação
+     de entrar/sair mesmo com movimento reduzido */
+  .tools-bar.is-collapsed .tool-pill {
+    animation: dockCollapse 0.3s var(--ease-out-expo) forwards !important;
+  }
+  .tools-bar.is-expanded .tool-pill {
+    animation: dockExpand 0.4s var(--ease-spring) forwards !important;
+  }
 }
