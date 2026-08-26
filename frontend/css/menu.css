@@ -122,13 +122,21 @@
   transform: scaleY(0.8);
 }
 .floating-menu.is-collapsed .menu-tools-wrap .float-pill {
-  animation: toolCollapse 0.4s var(--ease-out-expo) forwards;
+  animation: toolCollapse 0.26s var(--ease-out-expo) forwards;
 }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill {
-  animation: toolExpand 0.45s var(--ease-out-expo) forwards;
+  animation: toolExpand 0.45s var(--ease-spring) forwards;
 }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(1) { animation-delay: 0.00s; }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(2) { animation-delay: 0.06s; }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.12s; }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.18s; }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0.24s; }
+
+/* Saída em ordem reversa: a pílula de baixo some primeiro —
+   parece que "afundam" de volta em direção à coroa */
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(1) { animation-delay: 0.16s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(2) { animation-delay: 0.12s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.08s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.04s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0s; }
