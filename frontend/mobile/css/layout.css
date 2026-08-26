@@ -310,7 +310,7 @@ html.theme-morphing .theme-toggle-thumb {
 
 /* Collapse / Expand com stagger */
 .tools-bar.is-collapsed .tool-pill {
-  animation: dockCollapse 0.26s var(--ease-out-expo) forwards;
+  animation: dockCollapse 0.2s var(--ease-out-expo) forwards;
   pointer-events: none;
 }
 
@@ -331,17 +331,17 @@ html.theme-morphing .theme-toggle-thumb {
 .tools-bar.is-expanded .tool-pill:nth-child(4) { animation-delay: 0.18s; }
 .tools-bar.is-expanded .tool-pill:nth-child(5) { animation-delay: 0.24s; }
 
-/* Saída: ordem reversa (a de baixo some primeiro) — parece que
-   as pílulas "afundam" de volta em direção à coroa */
-.tools-bar.is-collapsed .tool-pill:nth-child(1) { animation-delay: 0.16s; }
-.tools-bar.is-collapsed .tool-pill:nth-child(2) { animation-delay: 0.12s; }
-.tools-bar.is-collapsed .tool-pill:nth-child(3) { animation-delay: 0.08s; }
-.tools-bar.is-collapsed .tool-pill:nth-child(4) { animation-delay: 0.04s; }
+/* Saída: micro-cascata de baixo pra cima, quase juntas —
+   afundam em direção à coroa. Fechar tem que ser mais rápido que abrir. */
+.tools-bar.is-collapsed .tool-pill:nth-child(1) { animation-delay: 0.07s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(2) { animation-delay: 0.05s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(3) { animation-delay: 0.035s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(4) { animation-delay: 0.02s; }
 .tools-bar.is-collapsed .tool-pill:nth-child(5) { animation-delay: 0s; }
 
 @keyframes dockCollapse {
-  0% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
-  100% { opacity: 0; transform: translateX(-18px) scale(0.75); filter: blur(2px); }
+  0% { opacity: 1; transform: translate(0, 0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translate(-6px, -18px) scale(0.7); filter: blur(2px); }
 }
 
 @keyframes dockExpand {

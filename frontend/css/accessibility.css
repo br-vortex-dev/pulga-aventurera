@@ -33,7 +33,7 @@
      de entrar/sair mesmo com movimento reduzido. Sobrescreve só a
      duração, preservando nome, easing, fill e os atrasos do stagger. */
   .floating-menu.is-collapsed .menu-tools-wrap .float-pill {
-    animation-duration: 0.26s !important;
+    animation-duration: 0.2s !important;
     animation-iteration-count: 1 !important;
   }
   .floating-menu.is-expanded .menu-tools-wrap .float-pill {

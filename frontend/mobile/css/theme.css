@@ -127,7 +127,7 @@ html {
      duração (o que o * acima zera), preservando nome, easing,
      fill e os atrasos do stagger definidos no layout.css. */
   .tools-bar.is-collapsed .tool-pill {
-    animation-duration: 0.26s !important;
+    animation-duration: 0.2s !important;
     animation-iteration-count: 1 !important;
   }
   .tools-bar.is-expanded .tool-pill {
