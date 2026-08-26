@@ -123,11 +123,15 @@ html {
   }
 
   /* Exceção: as pílulas do menu da coroa continuam com a animação
-     de entrar/sair mesmo com movimento reduzido */
+     de entrar/sair mesmo com movimento reduzido. Sobrescreve só a
+     duração (o que o * acima zera), preservando nome, easing,
+     fill e os atrasos do stagger definidos no layout.css. */
   .tools-bar.is-collapsed .tool-pill {
-    animation: dockCollapse 0.3s var(--ease-out-expo) forwards !important;
+    animation-duration: 0.26s !important;
+    animation-iteration-count: 1 !important;
   }
   .tools-bar.is-expanded .tool-pill {
-    animation: dockExpand 0.4s var(--ease-spring) forwards !important;
+    animation-duration: 0.45s !important;
+    animation-iteration-count: 1 !important;
   }
 }

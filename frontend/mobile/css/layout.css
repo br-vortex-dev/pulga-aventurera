@@ -310,7 +310,7 @@ html.theme-morphing .theme-toggle-thumb {
 
 /* Collapse / Expand com stagger */
 .tools-bar.is-collapsed .tool-pill {
-  animation: dockCollapse 0.3s var(--ease-out-expo) forwards;
+  animation: dockCollapse 0.26s var(--ease-out-expo) forwards;
   pointer-events: none;
 }
 
@@ -321,23 +321,33 @@ html.theme-morphing .theme-toggle-thumb {
 }
 
 .tools-bar.is-expanded .tool-pill {
-  animation: dockExpand 0.4s var(--ease-spring) forwards;
+  animation: dockExpand 0.45s var(--ease-spring) forwards;
 }
 
+/* Entrada: de cima pra baixo, uma a uma */
 .tools-bar.is-expanded .tool-pill:nth-child(1) { animation-delay: 0s; }
-.tools-bar.is-expanded .tool-pill:nth-child(2) { animation-delay: 0.05s; }
-.tools-bar.is-expanded .tool-pill:nth-child(3) { animation-delay: 0.1s; }
-.tools-bar.is-expanded .tool-pill:nth-child(4) { animation-delay: 0.15s; }
-.tools-bar.is-expanded .tool-pill:nth-child(5) { animation-delay: 0.2s; }
+.tools-bar.is-expanded .tool-pill:nth-child(2) { animation-delay: 0.06s; }
+.tools-bar.is-expanded .tool-pill:nth-child(3) { animation-delay: 0.12s; }
+.tools-bar.is-expanded .tool-pill:nth-child(4) { animation-delay: 0.18s; }
+.tools-bar.is-expanded .tool-pill:nth-child(5) { animation-delay: 0.24s; }
+
+/* Saída: ordem reversa (a de baixo some primeiro) — parece que
+   as pílulas "afundam" de volta em direção à coroa */
+.tools-bar.is-collapsed .tool-pill:nth-child(1) { animation-delay: 0.16s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(2) { animation-delay: 0.12s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(3) { animation-delay: 0.08s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(4) { animation-delay: 0.04s; }
+.tools-bar.is-collapsed .tool-pill:nth-child(5) { animation-delay: 0s; }
 
 @keyframes dockCollapse {
-  0% { opacity: 1; transform: translateX(0) scale(1); }
-  100% { opacity: 0; transform: translateX(-12px) scale(0.85); }
+  0% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: translateX(-18px) scale(0.75); filter: blur(2px); }
 }
 
 @keyframes dockExpand {
-  0% { opacity: 0; transform: translateX(-12px) scale(0.85); }
-  100% { opacity: 1; transform: translateX(0) scale(1); }
+  0% { opacity: 0; transform: translateX(-24px) scale(0.68); filter: blur(3px); }
+  55% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
 }
 
 /* ---- Main / Pages ---- */
