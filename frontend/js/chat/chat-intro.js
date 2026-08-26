@@ -118,9 +118,18 @@ window.LizChatIntro = {
       this._introCrown.classList.add('intro-crown-enter');
     });
 
-    setTimeout(() => {
+    // Flutuação só depois da entrada TERMINAR (700ms). Antes ela entrava
+    // aos 480ms e substituía crownEntrance no meio — a coroa "repetia".
+    const startFloat = () => {
+      if (!this._introCrown || this._introStage === 'complete') return;
       this._introCrown.classList.add('intro-crown-float');
-    }, 480);
+    };
+    this._floatFallbackTimer = setTimeout(startFloat, 740);
+    this._introCrownImg.addEventListener('animationend', (e) => {
+      if (e.animationName !== 'crownEntrance') return;
+      clearTimeout(this._floatFallbackTimer);
+      startFloat();
+    }, { once: true });
 
     setTimeout(() => {
       this._minTimeElapsed = true;
