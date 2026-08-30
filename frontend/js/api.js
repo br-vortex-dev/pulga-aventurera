@@ -234,6 +234,7 @@ const LizAPI = {
         source: typeof item.source === 'string' ? item.source : '',
         age: typeof item.age === 'string' ? item.age : '',
         provider: typeof item.provider === 'string' ? item.provider : '',
+        thumbnail: typeof item.thumbnail === 'string' ? item.thumbnail : '',
       })) : [],
       // Anexo: só a referência (uploadId) — a imagem é reidratada sob
       // demanda via getUploadDataUrl (atributo data-upload-id na tela).

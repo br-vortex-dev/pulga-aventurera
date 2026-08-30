@@ -851,7 +851,8 @@ html.liz-page-hidden *::after {
 .web-results-list { display: grid; gap: 7px; }
 .web-result-card {
   display: grid;
-  gap: 3px;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
   padding: 9px 10px;
   border: 1px solid rgba(139, 92, 246, 0.14);
   border-radius: 10px;
@@ -859,6 +860,23 @@ html.liz-page-hidden *::after {
   text-decoration: none;
   background: rgba(139, 92, 246, 0.045);
   transition: border-color 160ms ease, background 160ms ease;
+  align-items: start;
+}
+.web-result-card:not(:has(.web-result-thumb)) {
+  grid-template-columns: 1fr;
+}
+.web-result-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: rgba(139, 92, 246, 0.08);
+  flex-shrink: 0;
+}
+.web-result-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
 }
 .web-result-card:hover {
   border-color: rgba(139, 92, 246, 0.38);
@@ -868,3 +886,4 @@ html.liz-page-hidden *::after {
 .web-result-description { color: var(--color-text-secondary); font-size: 0.7rem; line-height: 1.4; }
 .web-result-source { color: var(--color-text-muted); font-size: 0.62rem; }
 [data-theme="light"] .web-result-card { background: rgba(255, 255, 255, 0.7); }
+[data-theme="light"] .web-result-thumb { background: rgba(0, 0, 0, 0.04); }

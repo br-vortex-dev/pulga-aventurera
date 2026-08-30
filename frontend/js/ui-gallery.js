@@ -24,7 +24,10 @@ LizUI.renderFileMessage = function(file, index) {
 // ===================== IMAGENS DA IA =====================
 LizUI._safeImageUrl = function(value) {
   const raw = String(value || '').trim();
+  if (!raw) return '';
   if (/^data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]+$/i.test(raw)) return raw;
+  // Proxy URLs do backend (relativos: /api/proxy-image?url=...)
+  if (raw.startsWith('/api/proxy-image')) return raw;
   try {
     const url = new URL(raw);
     return url.protocol === 'https:' ? url.toString() : '';
@@ -35,8 +38,12 @@ LizUI._safeImageUrl = function(value) {
 
 LizUI.renderAIImages = function(images) {
   if (!Array.isArray(images)) return '';
+  const apiBase = (typeof LizAPI !== 'undefined' && LizAPI.BASE_URL) ? LizAPI.BASE_URL : '';
   return images.map((image) => {
-    const src = this._safeImageUrl(image.url || image.src);
+    var src = this._safeImageUrl(image.url || image.src);
+    if (src && src.startsWith('/api/') && apiBase) {
+      src = apiBase.replace(/\/api\/?$/, '') + src;
+    }
     const uploadAttr = (!src && image.uploadId)
       ? ' data-upload-id="' + this._esc(image.uploadId) + '"' : '';
     if (!src && !uploadAttr) return '';

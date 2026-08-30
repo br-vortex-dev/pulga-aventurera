@@ -210,17 +210,24 @@ LizUI.setStatus = function(text) {
 // ===================== FONTES DA WEB =====================
 LizUI.renderWebResults = function(results) {
   if (!Array.isArray(results)) return '';
-  const cards = results.map((item) => {
-    const url = this._safeLinkUrl(item.url);
+  var apiBase = (typeof LizAPI !== 'undefined' && LizAPI.BASE_URL) ? LizAPI.BASE_URL : '';
+  var cards = results.map((item) => {
+    var url = this._safeLinkUrl(item.url);
     if (!url) return '';
-    const title = this._esc(item.title || 'Resultado da busca');
-    const description = this._esc(item.description || '');
-    const source = this._esc(item.source || 'Fonte consultada');
-    const age = item.age ? ' · ' + this._esc(item.age) : '';
-    return '<a class="web-result-card" href="' + this._esc(url) + '" target="_blank" rel="noopener noreferrer">' +
-      '<span class="web-result-title">' + title + '</span>' +
+    var title = this._esc(item.title || 'Resultado da busca');
+    var description = this._esc(item.description || '');
+    var source = this._esc(item.source || 'Fonte consultada');
+    var age = item.age ? ' · ' + this._esc(item.age) : '';
+    var thumbHtml = '';
+    if (item.thumbnail) {
+      var thumbSrc = item.thumbnail;
+      if (thumbSrc.startsWith('/api/') && apiBase) thumbSrc = apiBase.replace(/\/api\/?$/, '') + thumbSrc;
+      thumbHtml = '<img class="web-result-thumb" src="' + this._esc(thumbSrc) + '" alt="" loading="lazy" />';
+    }
+    return '<a class="web-result-card" href="' + this._esc(url) + '" target="_blank" rel="noopener noreferrer">' + thumbHtml +
+      '<div class="web-result-text"><span class="web-result-title">' + title + '</span>' +
       '<span class="web-result-description">' + description + '</span>' +
-      '<span class="web-result-source">' + source + age + '</span>' +
+      '<span class="web-result-source">' + source + age + '</span></div>' +
       '</a>';
   }).join('');
   return cards ? '<section class="web-results" aria-label="Fontes consultadas"><div class="web-results-heading">Fontes consultadas</div><div class="web-results-list">' + cards + '</div></section>' : '';
