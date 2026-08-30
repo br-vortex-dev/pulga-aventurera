@@ -43,6 +43,70 @@ const router = express.Router();
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/* ---------- Proxy de imagens ----------
+ * Busca imagens externas (Openverse, Flickr etc.) e serve como
+ * proxy, evitando problemas de CORS, hotlink e Referer.
+ * Limite: 2 MB por imagem, timeout de 10s. Cache de 1h no browser. */
+const IMAGE_PROXY_MAX_BYTES = 2 * 1024 * 1024;
+const IMAGE_PROXY_TIMEOUT = 10000;
+
+router.get('/proxy-image', asyncHandler(async (req, res) => {
+  const rawUrl = String(req.query.url || '').trim();
+  if (!rawUrl) throw new ApiError(400, 'url é obrigatória');
+
+  let url;
+  try {
+    url = new URL(rawUrl);
+  } catch (_) {
+    throw new ApiError(400, 'url inválida');
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    throw new ApiError(400, 'Apenas URLs HTTP/HTTPS são permitidas');
+  }
+  // Bloqueia IPs internos (SSRF)
+  const hostname = url.hostname.toLowerCase();
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+  ) {
+    throw new ApiError(400, 'URL interna não permitida');
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), IMAGE_PROXY_TIMEOUT);
+  try {
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Liz-ImageProxy/1.0',
+        'Accept': 'image/*',
+      },
+    });
+    if (!response.ok) {
+      throw new ApiError(502, 'Imagem não disponível');
+    }
+    const contentType = (response.headers.get('content-type') || '').split(';')[0].toLowerCase();
+    if (!contentType.startsWith('image/')) {
+      throw new ApiError(502, 'Resposta não é uma imagem');
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length > IMAGE_PROXY_MAX_BYTES) {
+      throw new ApiError(502, 'Imagem muito grande');
+    }
+    res.set('Content-Type', contentType);
+    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    res.set('Access-Control-Allow-Origin', '*');
+    res.send(buffer);
+  } finally {
+    clearTimeout(timer);
+  }
+}));
+
 /** Envolve handlers async pra qualquer reject cair no error handler central. */
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);

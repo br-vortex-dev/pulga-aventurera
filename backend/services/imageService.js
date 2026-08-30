@@ -47,6 +47,12 @@ function extractQuery(text) {
     .slice(0, 180);
 }
 
+/** Gera URL relativa do proxy de imagens do backend. */
+function proxyImageUrl(originalUrl) {
+  if (!originalUrl) return '';
+  return '/api/proxy-image?url=' + encodeURIComponent(originalUrl);
+}
+
 async function searchOpenverse(query) {
   const cleanQuery = String(query || '').trim();
   if (!cleanQuery) return [];
@@ -56,15 +62,18 @@ async function searchOpenverse(query) {
     const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
     if (!response.ok) throw new ApiError(502, 'A busca de imagens não respondeu');
     const data = await response.json();
-    return (Array.isArray(data.results) ? data.results : []).slice(0, MAX_RESULTS).map((item) => ({
-      url: safeHttpUrl(item.thumbnail || item.url),
-      sourceUrl: safeHttpUrl(item.foreign_landing_url || item.detail_url),
-      title: String(item.title || 'Imagem encontrada').slice(0, 180),
-      creator: String(item.creator || '').slice(0, 120),
-      license: String(item.license || '').slice(0, 80),
-      licenseUrl: safeHttpUrl(item.license_url),
-      source: 'Openverse',
-    })).filter((item) => item.url);
+    return (Array.isArray(data.results) ? data.results : []).slice(0, MAX_RESULTS).map((item) => {
+      const rawUrl = safeHttpUrl(item.thumbnail || item.url);
+      return {
+        url: proxyImageUrl(rawUrl),
+        sourceUrl: safeHttpUrl(item.foreign_landing_url || item.detail_url),
+        title: String(item.title || 'Imagem encontrada').slice(0, 180),
+        creator: String(item.creator || '').slice(0, 120),
+        license: String(item.license || '').slice(0, 80),
+        licenseUrl: safeHttpUrl(item.license_url),
+        source: 'Openverse',
+      };
+    }).filter((item) => item.url);
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(502, 'Não consegui buscar imagens agora');
