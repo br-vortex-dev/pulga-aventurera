@@ -46,9 +46,32 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 /* ---------- Proxy de imagens ----------
  * Busca imagens externas (Openverse, Flickr etc.) e serve como
  * proxy, evitando problemas de CORS, hotlink e Referer.
- * Limite: 2 MB por imagem, timeout de 10s. Cache de 1h no browser. */
+ * Limite: 2 MB por imagem, timeout de 10s.
+ * Cache em memória: 1h TTL, máx 200 entradas. */
 const IMAGE_PROXY_MAX_BYTES = 2 * 1024 * 1024;
 const IMAGE_PROXY_TIMEOUT = 10000;
+const IMAGE_PROXY_CACHE_TTL = 60 * 60 * 1000; // 1 hora
+const IMAGE_PROXY_CACHE_MAX = 200;
+const imageCache = new Map();
+
+function imageCacheGet(key) {
+  const entry = imageCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > IMAGE_PROXY_CACHE_TTL) {
+    imageCache.delete(key);
+    return null;
+  }
+  return entry;
+}
+
+function imageCacheSet(key, buffer, contentType) {
+  if (imageCache.size >= IMAGE_PROXY_CACHE_MAX) {
+    // Remove a entrada mais antiga
+    const oldest = imageCache.keys().next().value;
+    imageCache.delete(oldest);
+  }
+  imageCache.set(key, { buffer, contentType, ts: Date.now() });
+}
 
 router.get('/proxy-image', asyncHandler(async (req, res) => {
   const rawUrl = String(req.query.url || '').trim();
@@ -76,6 +99,17 @@ router.get('/proxy-image', asyncHandler(async (req, res) => {
     throw new ApiError(400, 'URL interna não permitida');
   }
 
+  // Verifica cache em memória
+  const cacheKey = url.toString();
+  const cached = imageCacheGet(cacheKey);
+  if (cached) {
+    res.set('Content-Type', cached.contentType);
+    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('X-Cache', 'HIT');
+    return res.send(cached.buffer);
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), IMAGE_PROXY_TIMEOUT);
   try {
@@ -97,9 +131,12 @@ router.get('/proxy-image', asyncHandler(async (req, res) => {
     if (buffer.length > IMAGE_PROXY_MAX_BYTES) {
       throw new ApiError(502, 'Imagem muito grande');
     }
+    // Salva no cache
+    imageCacheSet(cacheKey, buffer, contentType);
     res.set('Content-Type', contentType);
     res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
     res.set('Access-Control-Allow-Origin', '*');
+    res.set('X-Cache', 'MISS');
     res.send(buffer);
   } finally {
     clearTimeout(timer);
