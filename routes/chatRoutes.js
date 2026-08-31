@@ -83,8 +83,7 @@ router.get('/proxy-image', asyncHandler(async (req, res) => {
       signal: controller.signal,
       redirect: 'follow',
       headers: {
-        'User-Agent': 'Liz-ImageProxy/1.0',
-        'Accept': 'image/*',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
     });
     if (!response.ok) {
