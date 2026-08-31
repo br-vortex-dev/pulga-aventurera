@@ -67,6 +67,7 @@ app.set('trust proxy', 1);
 // Helmet com CSP ajustada: a interface carrega o SDK do Firebase (gstatic),
 // chama as APIs do Google (googleapis/firebaseapp) e usa Google Fonts.
 app.use(helmet({
+  crossOriginResourcePolicy: false,
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
