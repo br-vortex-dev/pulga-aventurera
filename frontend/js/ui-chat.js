@@ -222,7 +222,8 @@ LizUI.renderWebResults = function(results) {
     if (item.thumbnail) {
       var thumbSrc = item.thumbnail;
       if (thumbSrc.startsWith('/api/') && apiBase) thumbSrc = apiBase.replace(/\/api\/?$/, '') + thumbSrc;
-      thumbHtml = '<img class="web-result-thumb" src="' + this._esc(thumbSrc) + '" alt="" loading="lazy" />';
+      var thumbOnErr = ' onerror="this.style.display=\'none\'" onload="this.classList.remove(\'is-loading\')"';
+      thumbHtml = '<img class="web-result-thumb is-loading" src="' + this._esc(thumbSrc) + '" alt="" loading="lazy"' + thumbOnErr + ' />';
     }
     return '<a class="web-result-card" href="' + this._esc(url) + '" target="_blank" rel="noopener noreferrer">' + thumbHtml +
       '<div class="web-result-text"><span class="web-result-title">' + title + '</span>' +

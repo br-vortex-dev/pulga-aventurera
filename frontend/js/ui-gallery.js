@@ -56,9 +56,11 @@ LizUI.renderAIImages = function(images) {
     const link = sourceUrl
       ? '<a class="ai-image-source-link" href="' + this._esc(sourceUrl) + '" target="_blank" rel="noopener noreferrer">Abrir fonte</a>'
       : '';
+    var loadClass = src.startsWith('/api/') ? ' is-loading' : '';
+    var onError = ' onerror="this.parentElement.classList.remove(\'is-loading\');this.style.display=\'none\'" onload="this.parentElement.classList.remove(\'is-loading\')"';
     return '<figure class="ai-image-card"' + uploadAttr + '>' +
-      '<div class="ai-image-preview" data-file-url="' + this._esc(src) + '" data-file-name="' + alt + '" role="button" tabindex="0">' +
-      '<img src="' + this._esc(src) + '" alt="' + alt + '" loading="lazy" />' +
+      '<div class="ai-image-preview' + loadClass + '" data-file-url="' + this._esc(src) + '" data-file-name="' + alt + '" role="button" tabindex="0">' +
+      '<img src="' + this._esc(src) + '" alt="' + alt + '" loading="lazy"' + onError + ' />' +
       '<span class="ai-image-expand">' + LizConfig.icons.expand + '</span></div>' +
       '<figcaption><span class="ai-image-title">' + title + '</span><span class="ai-image-meta">' + source + creator + license + '</span>' + link + '</figcaption>' +
       '</figure>';

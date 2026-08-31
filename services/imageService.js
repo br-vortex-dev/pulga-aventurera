@@ -63,7 +63,7 @@ async function searchOpenverse(query) {
     if (!response.ok) throw new ApiError(502, 'A busca de imagens não respondeu');
     const data = await response.json();
     return (Array.isArray(data.results) ? data.results : []).slice(0, MAX_RESULTS).map((item) => {
-      const rawUrl = safeHttpUrl(item.thumbnail || item.url);
+      const rawUrl = safeHttpUrl(item.url || item.thumbnail);
       return {
         url: proxyImageUrl(rawUrl),
         sourceUrl: safeHttpUrl(item.foreign_landing_url || item.detail_url),
