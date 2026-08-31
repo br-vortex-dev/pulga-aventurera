@@ -9,6 +9,12 @@ const { ApiError } = require('./aiClient');
 const MAX_RESULTS = 6;
 const BRAVE_URL = 'https://api.search.brave.com/res/v1/web/search';
 
+/** Gera URL relativa do proxy de imagens do backend. */
+function proxyImageUrl(originalUrl) {
+  if (!originalUrl) return '';
+  return '/api/proxy-image?url=' + encodeURIComponent(originalUrl);
+}
+
 function withTimeout(ms = 15000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
@@ -62,6 +68,10 @@ async function searchBrave(query) {
     const data = await response.json();
     return (Array.isArray(data?.web?.results) ? data.web.results : []).slice(0, MAX_RESULTS).map((item) => {
       const urlValue = safeHttpUrl(item.url);
+      const rawThumb = (item.thumbnail && item.thumbnail.src)
+        ? safeHttpUrl(item.thumbnail.src)
+        : null;
+      const thumbUrl = rawThumb ? proxyImageUrl(rawThumb) : null;
       return {
         title: stripHtml(item.title || 'Resultado da busca').slice(0, 180),
         url: urlValue,
@@ -69,6 +79,7 @@ async function searchBrave(query) {
         source: hostFromUrl(urlValue),
         age: stripHtml(item.age || item.page_age || '').slice(0, 60),
         provider: 'Brave Search',
+        thumbnail: thumbUrl,
       };
     }).filter((item) => item.url);
   } catch (error) {
@@ -96,21 +107,27 @@ async function searchDuckDuckGo(query) {
     const data = await response.json();
     const results = [];
     if (data.AbstractURL && data.AbstractText) {
+      const ddgAbsRaw = (data.Image && typeof data.Image === 'string') ? safeHttpUrl(data.Image) : null;
+      const ddgAbsThumb = ddgAbsRaw ? proxyImageUrl(ddgAbsRaw) : null;
       results.push({
         title: stripHtml(data.Heading || 'Resultado'),
         url: safeHttpUrl(data.AbstractURL),
         description: stripHtml(data.AbstractText).slice(0, 420),
         source: hostFromUrl(data.AbstractURL),
         provider: 'DuckDuckGo',
+        thumbnail: ddgAbsThumb,
       });
     }
     flattenDuckTopics(data.RelatedTopics).slice(0, MAX_RESULTS - results.length).forEach((item) => {
+      const ddgRaw = (item.Image && typeof item.Image === 'string') ? safeHttpUrl(item.Image) : null;
+      const ddgThumb = ddgRaw ? proxyImageUrl(ddgRaw) : null;
       results.push({
         title: stripHtml(item.Text).split(' - ')[0].slice(0, 180),
         url: safeHttpUrl(item.FirstURL),
         description: stripHtml(item.Text).slice(0, 420),
         source: hostFromUrl(item.FirstURL),
         provider: 'DuckDuckGo',
+        thumbnail: ddgThumb,
       });
     });
     return results.filter((item) => item.url).slice(0, MAX_RESULTS);
