@@ -116,7 +116,7 @@ const PT_HINTS_RE = /[áàâãéêíóôõúç]|\b(de|do|da|dos|das|com|para|pra
 async function translateQuery(query) {
   const url = process.env.AI_API_URL;
   if (!url || !PT_HINTS_RE.test(query)) return null;
-  const { controller, done } = withTimeout(6000);
+  const { controller, done } = withTimeout(12000);
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -125,7 +125,9 @@ async function translateQuery(query) {
         ...(process.env.AI_API_KEY ? { Authorization: `Bearer ${process.env.AI_API_KEY}` } : {}),
       },
       body: JSON.stringify({
-        model: process.env.AI_MODEL || 'gpt-4o-mini',
+        // Modelo rápido dedicado à tradução quando configurado (o modelo
+        // principal de chat pode ser lento demais pra esta etapa).
+        model: process.env.AI_TRANSLATE_MODEL || process.env.AI_MODEL || 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
