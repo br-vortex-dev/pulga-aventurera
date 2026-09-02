@@ -335,12 +335,17 @@ window.LizAPI = LizAPI;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 60000);
     fetch(LizAPI.BASE_URL + '/health', { method: 'GET', signal: controller.signal })
+      .then((res) => {
+        if (res && res.ok) {
+          // Backend acordou — marca online imediatamente pra próxima
+          // mensagem já ir direto pro backend sem esperar outro check.
+          LizAPI.online = true;
+          LizAPI._lastCheck = Date.now();
+        }
+      })
       .catch(() => {})
       .finally(() => {
         clearTimeout(timer);
-        // Força o checkBackend a revalidar na próxima chamada — se o
-        // prewarm acordou o serviço, o status "online" atualiza logo.
-        LizAPI._lastCheck = 0;
       });
   } catch (_) { /* sem fetch disponível — ignora */ }
 })();
