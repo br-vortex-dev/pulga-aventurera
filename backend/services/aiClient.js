@@ -104,24 +104,37 @@ async function requestCompletion(url, payload) {
   }
 }
 
+/* ---------- Fallback automático de modelo ----------
+ * Modelos :free do OpenRouter usam pool compartilhado e vivem levando
+ * 429. Quando o modelo configurado está limitado, troca na hora pro
+ * próximo da fila em vez de fazer o usuário esperar retry no mesmo. */
+function modelCandidates(model) {
+  const primary = process.env.AI_MODEL || model;
+  const extras = String(process.env.AI_FALLBACK_MODELS || '')
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean);
+  const defaults = [
+    'minimax/minimax-m3:free',
+    'nvidia/nemotron-3-super-120b-a12b:free',
+    'openrouter/free',
+  ];
+  return [...new Set([primary, ...extras, ...defaults].filter(Boolean))];
+}
+
 /**
  * Chama um provedor OpenAI-compatível (qualquer endpoint /chat/completions).
  * Configurado via env: AI_API_URL, AI_API_KEY, AI_MODEL, AI_MAX_TOKENS.
  *
- * Duas camadas de resiliência:
- * 1. Retry com backoff para erros transitórios (429/5xx/rede) — o provedor
- *    tem rate limit agressivo, então a 2ª/3ª tentativa quase sempre resolve.
- * 2. Modelos de raciocínio podem esgotar o orçamento "pensando" e devolver
+ * Três camadas de resiliência:
+ * 1. Fallback de modelo: 429 no modelo atual troca pro próximo da fila na hora.
+ * 2. Retry com backoff para erros transitórios (5xx/rede/timeout).
+ * 3. Modelos de raciocínio podem esgotar o orçamento "pensando" e devolver
  *    conteúdo vazio — nesse caso tenta de novo com orçamento dobrado (teto 8192).
  */
 async function callAI(messages, model) {
   const url = process.env.AI_API_URL;
   const base = Number(process.env.AI_MAX_TOKENS || 2048);
-  const basePayload = {
-    model: process.env.AI_MODEL || model,
-    messages,
-    stream: false,
-  };
 
   // Circuito aberto (limite recente do provedor): falha rápido com erro claro,
   // sem queimar ~25s de tentativas que vão dar 429 de novo.
@@ -130,39 +143,47 @@ async function callAI(messages, model) {
   }
 
   let lastError = null;
+  let limitedCount = 0;
 
-  for (let attempt = 1; attempt <= AI_MAX_ATTEMPTS; attempt++) {
-    try {
-      let content = await requestCompletion(url, { ...basePayload, max_tokens: base });
-      if (!content) {
-        content = await requestCompletion(url, { ...basePayload, max_tokens: Math.min(base * 2, 8192) });
+  for (const candidate of modelCandidates(model)) {
+    for (let attempt = 1; attempt <= AI_MAX_ATTEMPTS; attempt++) {
+      try {
+        const payload = { model: candidate, messages, stream: false };
+        let content = await requestCompletion(url, { ...payload, max_tokens: base });
+        if (!content) {
+          content = await requestCompletion(url, { ...payload, max_tokens: Math.min(base * 2, 8192) });
+        }
+        if (!content) {
+          throw new ApiError(502, 'Provedor de IA retornou resposta vazia');
+        }
+        circuitOpenUntil = 0; // sucesso fecha o circuito
+        return content;
+      } catch (e) {
+        if (!(e instanceof RetryableError)) throw e;
+        lastError = e;
+        // Modelo limitado (429/cota free): esperar retry no mesmo modelo é
+        // inútil — pula pro próximo da fila.
+        if (e.freeLimit || e.upstreamStatus === 429) {
+          limitedCount++;
+          break;
+        }
+        // Erro transitório (5xx/rede/timeout): retry no mesmo modelo.
+        if (attempt === AI_MAX_ATTEMPTS) break;
+        // Respeita Retry-After quando vier; senão, espera a janela de 1 min.
+        const backoff = e.retryAfterMs !== null
+          ? Math.min(e.retryAfterMs, AI_RETRY_AFTER_CAP_MS)
+          : AI_RETRY_BASE_MS;
+        await sleep(backoff);
       }
-      if (!content) {
-        throw new ApiError(502, 'Provedor de IA retornou resposta vazia');
-      }
-      circuitOpenUntil = 0; // sucesso fecha o circuito
-      return content;
-    } catch (e) {
-      if (!(e instanceof RetryableError)) throw e;
-      lastError = e;
-      // Cota gratuita esgotada: retry nos próximos segundos é inútil.
-      if (e.freeLimit) break;
-      if (attempt === AI_MAX_ATTEMPTS) break;
-      // Respeita Retry-After quando vier; senão, espera a janela de 1 min.
-      const backoff = e.retryAfterMs !== null
-        ? Math.min(e.retryAfterMs, AI_RETRY_AFTER_CAP_MS)
-        : AI_RETRY_BASE_MS;
-      await sleep(backoff);
     }
   }
 
-  const is429 = lastError && lastError.upstreamStatus === 429;
-  if (is429) circuitOpenUntil = Date.now() + CIRCUIT_COOLDOWN_MS;
+  if (limitedCount > 0) circuitOpenUntil = Date.now() + CIRCUIT_COOLDOWN_MS;
 
   const detail = lastError && lastError.freeLimit
     ? 'limite gratuito do provedor esgotado — tente de novo em alguns minutos'
-    : is429
-      ? 'limite de requisições atingido — tente de novo em instantes'
+    : limitedCount > 0
+      ? 'todos os modelos gratuitos estão com limite de uso agora — tente de novo em instantes'
       : (lastError ? lastError.message : 'falha na comunicação');
   throw new ApiError(502, `Provedor de IA indisponível (${detail})`);
 }
