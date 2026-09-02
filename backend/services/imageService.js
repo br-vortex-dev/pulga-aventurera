@@ -13,9 +13,11 @@ const MAX_RESULTS = 6;
 // Pede mais resultados do que mostra pra poder sortear — sem isso o
 // Openverse devolve sempre as mesmas 6 imagens pra mesma query.
 const SEARCH_POOL = 20;
-// Abaixo disso a busca em português provavelmente não casou com o
-// índice (majoritariamente inglês) — tenta tradução/simplificação.
-const MIN_GOOD_RESULTS = 2;
+// Abaixo disso tenta tradução/simplificação: o índice do Openverse é
+// majoritariamente inglês e queries longas em português casam com
+// pouco resultado — e os poucos que casam costumam ser irrelevantes
+// (ex: "gato laranja com branco" → 8 hits, nenhum de gato).
+const MIN_GOOD_RESULTS = 10;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 const OPENVERSE_URL = 'https://api.openverse.org/v1/images/';
 
@@ -147,6 +149,10 @@ async function translateQuery(query) {
       .replace(/^["'`]+|["'`]+$/g, '')
       .slice(0, 120);
     if (!translated || translated.toLowerCase() === query.toLowerCase()) return null;
+    // Modelos de raciocínio (ex: os :free do OpenRouter) ignoram a
+    // instrução e devolvem o chain-of-thought inteiro — rejeita tudo
+    // que não parecer uma lista curta e limpa de palavras-chave.
+    if (translated.length > 80 || /[\n*#]|thinking process/i.test(translated)) return null;
     return translated;
   } catch (_) {
     return null;
@@ -194,9 +200,14 @@ function toResultItem(item) {
   };
 }
 
-/** Sorteia MAX_RESULTS do pool (Fisher–Yates) e converte. */
+/** Sorteia MAX_RESULTS entre os primeiros do pool e converte.
+ *  O Openverse devolve em ordem de relevância — sortear do pool
+ *  inteiro puxa lixo do fim do índice, então varia só entre os
+ *  primeiros (mantém relevância e ainda evita repetir sempre as
+ *  mesmas 6). */
 function pickResults(pool) {
-  const shuffled = [...pool];
+  const top = pool.slice(0, Math.min(pool.length, 12));
+  const shuffled = [...top];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
