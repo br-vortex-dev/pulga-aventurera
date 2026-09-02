@@ -44,6 +44,12 @@ LizUI.renderAIImages = function(images) {
     if (src && src.startsWith('/api/') && apiBase) {
       src = apiBase.replace(/\/api\/?$/, '') + src;
     }
+    // A galeria carrega o thumbnail leve; o expand abre a imagem cheia.
+    // Mensagens antigas não têm fullUrl — cai pro próprio src.
+    var fullSrc = this._safeImageUrl(image.fullUrl) || src;
+    if (fullSrc && fullSrc.startsWith('/api/') && apiBase) {
+      fullSrc = apiBase.replace(/\/api\/?$/, '') + fullSrc;
+    }
     const uploadAttr = (!src && image.uploadId)
       ? ' data-upload-id="' + this._esc(image.uploadId) + '"' : '';
     if (!src && !uploadAttr) return '';
@@ -59,7 +65,7 @@ LizUI.renderAIImages = function(images) {
     var loadClass = src.startsWith('/api/') ? ' is-loading' : '';
     var onError = ' onerror="this.parentElement.classList.remove(\'is-loading\');this.style.display=\'none\'" onload="this.parentElement.classList.remove(\'is-loading\')"';
     return '<figure class="ai-image-card"' + uploadAttr + '>' +
-      '<div class="ai-image-preview' + loadClass + '" data-file-url="' + this._esc(src) + '" data-file-name="' + alt + '" role="button" tabindex="0">' +
+      '<div class="ai-image-preview' + loadClass + '" data-file-url="' + this._esc(fullSrc) + '" data-file-name="' + alt + '" role="button" tabindex="0">' +
       '<img src="' + this._esc(src) + '" alt="' + alt + '" loading="lazy"' + onError + ' />' +
       '<span class="ai-image-expand">' + LizConfig.icons.expand + '</span></div>' +
       '<figcaption><span class="ai-image-title">' + title + '</span><span class="ai-image-meta">' + source + creator + license + '</span>' + link + '</figcaption>' +

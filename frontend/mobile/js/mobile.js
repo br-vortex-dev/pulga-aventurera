@@ -158,6 +158,9 @@ App._chat=function(){
     const preview=e.target.closest('.ai-image-preview, .md-image');
     if(!preview)return;
     const img=preview.matches('img')?preview:preview.querySelector('img');
+    // Galeria carrega thumbnail; o expand abre a imagem cheia (data-file-url)
+    const full=preview.dataset?preview.dataset.fileUrl:'';
+    if(full){this._previewImg(full,preview.dataset.fileName||(img&&img.alt)||'Imagem');return;}
     if(img&&img.getAttribute('src'))this._previewImg(img.src,preview.dataset.fileName||img.alt||'Imagem');
   });
   input.addEventListener('input',()=>{this._updateSendBtn();});
@@ -305,7 +308,13 @@ App._chat=function(){
 
 App._safeImageUrl=function(value){
   const raw=String(value||'').trim();
+  if(!raw)return '';
   if(/^data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]+$/i.test(raw))return raw;
+  // URLs relativas do proxy de imagens do backend — resolve contra a base da API
+  if(raw.indexOf('/api/proxy-image')===0){
+    const apiBase=(typeof LizAPI!=='undefined'&&LizAPI.BASE_URL)?LizAPI.BASE_URL:'';
+    return apiBase?apiBase.replace(/\/api\/?$/,'')+raw:raw;
+  }
   try{const u=new URL(raw);return u.protocol==='https:'?u.toString():'';}catch(e){return '';}
 };
 
@@ -313,6 +322,7 @@ App._aiImagesHTML=function(images){
   if(!Array.isArray(images))return '';
   return images.map(image=>{
     const src=this._safeImageUrl(image.url||image.src);
+    const full=this._safeImageUrl(image.fullUrl)||src;
     const uploadId=typeof image.uploadId==='string'?image.uploadId:'';
     if(!src&&!uploadId)return '';
     const alt=this._e(image.alt||image.title||'Imagem da Liz');
@@ -322,7 +332,7 @@ App._aiImagesHTML=function(images){
     const license=image.license?' · '+this._e(image.license):'';
     const sourceUrl=this._safeImageUrl(image.sourceUrl);
     const link=sourceUrl?'<a class="ai-image-source-link" href="'+this._e(sourceUrl)+'" target="_blank" rel="noopener noreferrer">Abrir fonte</a>':'';
-    return'<figure class="ai-image-card"'+(uploadId?' data-upload-id="'+this._e(uploadId)+'"':'')+'><div class="ai-image-preview" data-file-name="'+alt+'"><img src="'+this._e(src)+'" alt="'+alt+'" loading="lazy"><span class="ai-image-expand">⌕</span></div><figcaption><span class="ai-image-title">'+title+'</span><span class="ai-image-meta">'+source+creator+license+'</span>'+link+'</figcaption></figure>';
+    return'<figure class="ai-image-card"'+(uploadId?' data-upload-id="'+this._e(uploadId)+'"':'')+'><div class="ai-image-preview" data-file-url="'+this._e(full)+'" data-file-name="'+alt+'"><img src="'+this._e(src)+'" alt="'+alt+'" loading="lazy"><span class="ai-image-expand">⌕</span></div><figcaption><span class="ai-image-title">'+title+'</span><span class="ai-image-meta">'+source+creator+license+'</span>'+link+'</figcaption></figure>';
   }).join('');
 };
 

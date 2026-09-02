@@ -145,7 +145,13 @@ window.LizChatEvents = {
       const previewBtn = e.target.closest('.file-image-preview, .ai-image-preview');
       if (previewBtn) {
         const img = previewBtn.querySelector('img');
-        if (img) {
+        // Imagens da IA: a galeria carrega o thumbnail e o expand abre a
+        // imagem cheia guardada em data-file-url.
+        const fullSrc = previewBtn.classList.contains('ai-image-preview')
+          ? previewBtn.dataset.fileUrl : '';
+        if (fullSrc) {
+          LizUI.openPreview(fullSrc, previewBtn.dataset.fileName || (img && img.alt) || 'Imagem');
+        } else if (img) {
           LizUI.openPreview(img.src, previewBtn.dataset.fileName || img.alt);
         }
         return;

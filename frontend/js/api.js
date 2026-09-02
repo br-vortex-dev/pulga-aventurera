@@ -323,3 +323,24 @@ const LizAPI = {
 };
 
 window.LizAPI = LizAPI;
+
+/* ---------- Prewarm do backend ----------
+ * O Render free dorme após ~15 min sem uso; a primeira request depois
+ * leva ~20-30s porque precisa acordar o serviço. Dispara um health
+ * check assim que o chat abre pra ir acordando o backend enquanto o
+ * usuário ainda está chegando — quando ele envia a mensagem, a
+ * resposta já vem rápida. Silencioso: falha não afeta nada. */
+(function prewarmBackend() {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60000);
+    fetch(LizAPI.BASE_URL + '/health', { method: 'GET', signal: controller.signal })
+      .catch(() => {})
+      .finally(() => {
+        clearTimeout(timer);
+        // Força o checkBackend a revalidar na próxima chamada — se o
+        // prewarm acordou o serviço, o status "online" atualiza logo.
+        LizAPI._lastCheck = 0;
+      });
+  } catch (_) { /* sem fetch disponível — ignora */ }
+})();
