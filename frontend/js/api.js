@@ -26,15 +26,20 @@ const LizAPI = {
   _lastCheck: 0,
   _checkInterval: 30000, // re-verifica a cada 30s
 
-  /* ---------- Health Check ---------- */
+  /* ---------- Health Check ----------
+   * O Render free dorme após ~15 min e demora 20-30s pra acordar.
+   * Timeout curto (3s) sempre falhava no cold start e o frontend caía
+   * no fallback local. Timeout generoso quando o backend ainda não
+   * está online; curto quando já está (checagem rápida). */
   async checkBackend() {
     const now = Date.now();
     if (now - this._lastCheck < this._checkInterval && this.online) {
       return this.online;
     }
     this._lastCheck = now;
+    const timeout = this.online ? 5000 : 45000;
     try {
-      const res = await this._fetch('/health', { method: 'GET', timeout: 3000 });
+      const res = await this._fetch('/health', { method: 'GET', timeout });
       this.online = res && res.ok !== false;
     } catch (e) {
       this.online = false;
