@@ -362,6 +362,35 @@
   background: rgba(139, 92, 246, 0.08);
 }
 
+.composer-search-toggle {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
+  flex-shrink: 0;
+  transition: color var(--t-fast) ease, background var(--t-fast) ease, transform var(--t-fast) var(--ease-spring);
+}
+
+.composer-search-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+.composer-search-toggle:active {
+  transform: scale(0.9);
+}
+
+.composer-search-toggle.is-active {
+  color: var(--brand-light);
+  background: rgba(139, 92, 246, 0.15);
+}
+
 /* ============================================================
  * IMAGENS DEVOLVIDAS PELA IA
  * ============================================================ */
