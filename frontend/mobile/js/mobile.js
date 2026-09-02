@@ -154,6 +154,25 @@ App._chat=function(){
   const empty=$('#empty');const list=$('#ml');const content=$('#chatContent');
 
   form.addEventListener('submit',e=>{e.preventDefault();this._send();});
+
+  // Pesquisa na web — igual ao desktop: o toggle só sinaliza o modo
+  // (placeholder + estado ativo). A busca em si é detectada no backend
+  // pelo texto da mensagem via isWebRequest.
+  const ws=$('#wsb');
+  const defaultPlaceholder=input.placeholder;
+  this.webSearchEnabled=false;
+  if(ws){
+    ws.addEventListener('click',()=>{
+      this.webSearchEnabled=!this.webSearchEnabled;
+      ws.classList.toggle('is-active',this.webSearchEnabled);
+      ws.setAttribute('aria-pressed',String(this.webSearchEnabled));
+      input.placeholder=this.webSearchEnabled
+        ?'Pesquisar na web... (ex.: "pesquise sobre X")'
+        :defaultPlaceholder;
+      input.focus();
+    });
+  }
+
   list.addEventListener('click',e=>{
     const preview=e.target.closest('.ai-image-preview, .md-image');
     if(!preview)return;
