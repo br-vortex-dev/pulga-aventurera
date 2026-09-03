@@ -38,7 +38,8 @@ const STAMP = Date.now().toString(36);
 function stampHtml(file) {
   let html = fs.readFileSync(file, 'utf8');
   html = html.replace(
-    /(src|href)="((?!https?:\/\/|\/\/)[^"]+?\.(?:js|css))"/g,
+    /(src|href)="((?!https?:\/\/|\/\/)[^"]+?\.(?:js|css))(?:\?[^""]*)?"/g,
+    // (qualquer ?v= antigo é descartado e substituído pelo carimbo novo)
     (m, attr, url) => `${attr}="${url}?v=${STAMP}"`
   );
   fs.writeFileSync(file, html);
