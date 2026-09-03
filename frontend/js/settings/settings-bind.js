@@ -125,6 +125,16 @@ window.LizSettingsBind = {
       }
     }
     if (pageId === 'account') {
+      const logoutBtn = panel.querySelector('#float-logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          const done = () => window.location.reload();
+          try {
+            if (window.firebase && firebase.auth) { firebase.auth().signOut().then(done).catch(done); return; }
+          } catch (e) { /* sem SDK */ }
+          done();
+        });
+      }
       const emailInput = panel.querySelector('#float-email-input');
       if (emailInput) {
         emailInput.addEventListener('change', () => {

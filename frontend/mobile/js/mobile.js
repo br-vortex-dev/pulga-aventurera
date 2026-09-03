@@ -113,6 +113,7 @@ App._tabs=function(){
   pills.forEach(p=>{
     p.addEventListener('click',()=>{
       const a=p.dataset.t;
+      if(a==='account'){this._account();return;}
       // Chat: mostra conversas se já estiver no chat
       if(a==='chat'&&this.tab==='chat'){this._showConvs();return;}
       if(a===this.tab)return;
@@ -582,6 +583,52 @@ App._settings=function(){
 App._openModal=function(t,h){const m=$('#modalOverlay');if(!m)return;$('#modalTitle').textContent=t;$('#modalBody').innerHTML=h;m.classList.add('show');};
 App._closeModal=function(){const m=$('#modalOverlay');if(m)m.classList.remove('show');};
 App._set=function(t,html){this._openModal(t,html);};
+
+/* ---- Conta: identidade (Firebase primeiro, depois storage) + logout ---- */
+App._acctInfo=function(){
+  try{ if(window.firebase&&firebase.auth&&firebase.auth().currentUser){ const u=firebase.auth().currentUser; return { name:u.displayName||(u.email?u.email.split('@')[0]:'Você'), email:u.email||'' }; } }catch(e){}
+  return { name:localStorage.getItem('liz-user-name')||'Você', email:localStorage.getItem('liz-user-email')||'' };
+};
+App._logout=function(){
+  const done=()=>{ window.location.reload(); };
+  try{ if(window.firebase&&firebase.auth){ firebase.auth().signOut().then(done).catch(done); return; } }catch(e){}
+  done();
+};
+App._account=function(){
+  const info=this._acctInfo();
+  const initial=((info.name||'?').trim().charAt(0)||'?').toUpperCase();
+  const h='<div style="display:flex;align-items:center;gap:12px;padding:6px 2px 14px">'+
+    '<div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-dark));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.1rem;flex-shrink:0">'+initial+'</div>'+
+    '<div style="min-width:0"><div style="font-weight:700;font-size:0.95rem">'+this._e(info.name)+'</div>'+
+    '<div style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+this._e(info.email||'Sem email definido')+'</div>'+
+    '<div style="font-size:0.7rem;color:var(--brand-light);margin-top:2px">Plano Gratuito</div></div></div>'+
+    '<button id="mLogout" style="width:100%;padding:11px;border-radius:12px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.12);color:#f87171;font-weight:600;font-size:0.88rem;cursor:pointer">Sair da conta</button>';
+  this._openModal('Conta', h);
+  const b=$('#mLogout'); if(b) b.addEventListener('click',()=>this._logout());
+};
+
+/* ---- Conta: identidade (Firebase primeiro, depois storage) ---- */
+App._acctInfo=function(){
+  try{ if(window.firebase&&firebase.auth&&firebase.auth().currentUser){const u=firebase.auth().currentUser;return{name:u.displayName||(u.email?u.email.split('@')[0]:'Você'),email:u.email||''};} }catch(e){}
+  return{name:localStorage.getItem('liz-user-name')||'Você',email:localStorage.getItem('liz-user-email')||''};
+};
+App._logout=function(){
+  const done=()=>{window.location.reload();};
+  try{ if(window.firebase&&firebase.auth){firebase.auth().signOut().then(done).catch(done);return;} }catch(e){}
+  done();
+};
+App._account=function(){
+  const info=this._acctInfo();
+  const initial=((info.name||'?').trim().charAt(0)||'?').toUpperCase();
+  const h='<div style="display:flex;align-items:center;gap:12px;padding:4px 2px 14px">'+
+    '<div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--brand-light),var(--brand));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.15rem;flex-shrink:0">'+this._e(initial)+'</div>'+
+    '<div style="min-width:0;flex:1"><div style="font-weight:700;font-size:0.95rem;color:var(--text)">'+this._e(info.name)+'</div>'+
+    '<div style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+this._e(info.email||'Sem email definido')+'</div>'+
+    '<div style="font-size:0.7rem;color:var(--brand-light);margin-top:2px">Plano Gratuito</div></div></div>'+
+    '<button id="mLogout" style="width:100%;padding:11px;border-radius:12px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.12);color:#f87171;font-weight:600;font-size:0.88rem;cursor:pointer">Sair da conta</button>';
+  this._openModal('Conta',h);
+  const b=$('#mLogout');if(b)b.addEventListener('click',()=>this._logout());
+};
 
 App._showConvs=function(){
   const groups=LizData.getConversationGroups();

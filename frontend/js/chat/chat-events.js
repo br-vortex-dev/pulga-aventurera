@@ -389,6 +389,12 @@ window.LizChatEvents = {
       LizSettings.showFloatPanel(action);
       return;
     }
+    // Conta → abre o painel flutuante já na página de conta
+    if (action === 'account') {
+      LizSettings.showFloatPanel('account');
+      LizSettings.showSettingsPage('account');
+      return;
+    }
     // Fallback: abre painel (para outros casos não mapeados)
     if (LizUI.activePanel === action) {
       LizUI.closePanel();

@@ -25,10 +25,12 @@ const LizSettings = {
     const titles = {
       conversations: 'Conversas recentes',
       settings: 'Ajustes',
+      account: 'Conta',
     };
     const icons = {
       conversations: LizConfig.icons.chats || '',
       settings: LizConfig.icons.settings || '',
+      account: LizConfig.icons.user || '',
     };
     const title = titles[action] || action;
     let bodyHtml = '';
@@ -160,11 +162,21 @@ const LizSettings = {
     }, 0);
   },
 
-  /* ---------- Identidade do usuário (persistida, sem hardcoded) ---------- */
+  /* ---------- Identidade do usuário (Firebase primeiro, depois storage) ---------- */
+  _fbUser() {
+    try {
+      if (window.firebase && firebase.auth && firebase.auth().currentUser) return firebase.auth().currentUser;
+    } catch (e) { /* SDK indisponível */ }
+    return null;
+  },
   _userName() {
+    const f = this._fbUser();
+    if (f && (f.displayName || f.email)) return f.displayName || f.email.split('@')[0];
     return localStorage.getItem('liz-user-name') || 'Você';
   },
   _userEmail() {
+    const f = this._fbUser();
+    if (f && f.email) return f.email;
     return localStorage.getItem('liz-user-email') || '';
   },
   _initial() {

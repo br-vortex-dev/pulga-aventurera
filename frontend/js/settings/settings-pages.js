@@ -189,6 +189,7 @@ window.LizSettingsPages = {
               <span>Email</span>
               <input type="email" class="settings-input" id="float-email-input" value="${LizUI._esc(this._userEmail())}" placeholder="seu@email.com" />
             </label>
+            <button id="float-logout-btn" type="button" style="margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.12);color:#f87171;font-weight:600;font-size:0.85rem;cursor:pointer">Sair da conta</button>
           </div>
         </div>`,
       language: `
