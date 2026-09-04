@@ -43,11 +43,8 @@
   transform: translateY(-2px);
   filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.8));
 }
-.header-brand-crown.is-opening {
-  animation: crownMenuOpen 0.55s var(--ease-spring);
-}
-.header-brand-crown.is-closing {
-  animation: crownMenuClose 0.45s var(--ease-spring);
+.header-brand-crown.is-pulsing {
+  animation: crownTogglePulse 0.6s var(--ease-out-expo);
 }
 .chat-app.is-menu-collapsed .header-brand-crown {
   transform: none;

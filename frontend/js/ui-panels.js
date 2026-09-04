@@ -4,24 +4,37 @@
  * ============================================================ */
 
 // ===================== MENU PILLS =====================
+// Ao desativar, o pill ganha .is-deactivating por um instante pra barra
+// ativa encolher suave em vez de sumir do nada quando o painel fecha.
+LizUI._deactivatePill = function(p) {
+  p.classList.remove('is-deactivating');
+  void p.offsetWidth;
+  p.classList.add('is-deactivating');
+  setTimeout(() => p.classList.remove('is-deactivating'), 350);
+};
+
 LizUI.setActivePill = function(action) {
-  document.querySelectorAll('.float-pill[data-action]').forEach((p) => p.classList.toggle('is-active', p.dataset.action === action));
+  document.querySelectorAll('.float-pill[data-action]').forEach((p) => {
+    const on = p.dataset.action === action;
+    if (!on && p.classList.contains('is-active')) this._deactivatePill(p);
+    p.classList.toggle('is-active', on);
+  });
   this.activePill = action;
 };
 
 LizUI.clearActivePill = function() {
-  document.querySelectorAll('.float-pill[data-action]').forEach((p) => p.classList.remove('is-active'));
+  document.querySelectorAll('.float-pill[data-action]').forEach((p) => {
+    if (p.classList.contains('is-active')) this._deactivatePill(p);
+    p.classList.remove('is-active');
+  });
   this.activePill = null;
 };
 
 // ===================== COROA TOGGLE =====================
-// Animação direcional: abrir = coroa "arremessa" os pills; fechar = "absorve".
-LizUI._crownBounce = function(mode) {
-  const crown = this.el.crownToggle;
-  if (!crown) return;
-  crown.classList.remove('is-opening', 'is-closing');
-  void crown.offsetWidth;
-  crown.classList.add(mode);
+LizUI._pulseMainCrown = function() {
+  this.el.crownToggle.classList.remove('is-pulsing');
+  void this.el.crownToggle.offsetWidth;
+  this.el.crownToggle.classList.add('is-pulsing');
 };
 
 LizUI.toggleTools = function() {
@@ -30,8 +43,8 @@ LizUI.toggleTools = function() {
   const app = document.querySelector('.chat-app');
   if (!menu || !app) return;
   this._hideMainFloatPanel();
+  this._pulseMainCrown();
   const willCollapse = !menu.classList.contains('is-collapsed');
-  this._crownBounce(willCollapse ? 'is-closing' : 'is-opening');
   if (willCollapse) {
     menu.classList.remove('is-expanded'); menu.classList.add('is-collapsed');
     app.classList.add('is-menu-collapsed');

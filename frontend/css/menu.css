@@ -87,7 +87,7 @@
   border-color: rgba(139, 92, 246, 0.6);
   background: rgba(139, 92, 246, 0.14);
   box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.3), 0 8px 24px rgba(139, 92, 246, 0.3);
-  animation: pillClick 0.4s var(--ease-spring);
+  animation: pillClick 0.4s var(--ease-spring), pillGlow 0.6s ease-out;
 }
 .float-pill.is-active::before {
   content: '';
@@ -101,6 +101,21 @@
   background: linear-gradient(180deg, var(--color-brand-light), var(--color-brand-dark));
   box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
   animation: activeBarIn 0.35s var(--ease-out-expo) forwards, activeBarGlow 2.5s ease-in-out 0.4s infinite;
+}
+.float-pill.is-active .float-pill-ico svg { animation: icoPop 0.45s var(--ease-spring); }
+
+/* Painel fechando: a barra ativa encolhe suave e o pill "respira" de volta */
+.float-pill.is-deactivating { animation: pillRelease 0.3s ease; }
+.float-pill.is-deactivating::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 4px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--color-brand-light), var(--color-brand-dark));
+  animation: activeBarOut 0.25s ease-in forwards;
 }
 .float-pill:not(.is-active):active {
   animation: pillClick 0.35s var(--ease-spring);
@@ -121,7 +136,7 @@
   opacity: 0;
 }
 .floating-menu.is-collapsed .menu-tools-wrap .float-pill {
-  animation: toolCollapse 0.25s ease-in forwards;
+  animation: toolCollapse 0.2s var(--ease-out-expo) forwards;
 }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill {
   animation: toolExpand 0.45s var(--ease-spring) forwards;
@@ -132,13 +147,13 @@
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.18s; }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0.24s; }
 
-/* Saída: os pills voam de volta pra coroa — o mais próximo (topo) some
-   primeiro e o resto segue em cascata. Fechar é mais rápido que abrir. */
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(1) { animation-delay: 0s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(2) { animation-delay: 0.03s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.06s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.09s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0.12s; }
+/* Saída: micro-cascata de baixo pra cima, quase juntas —
+   afundam em direção à coroa. Fechar tem que ser mais rápido que abrir. */
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(1) { animation-delay: 0.07s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(2) { animation-delay: 0.05s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.035s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.02s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0s; }
 
 /* ---- Micro-animações no hover: cada ícone reage de um jeito ---- */
 .float-pill-ico svg { transition: transform 0.25s var(--ease-spring); }
