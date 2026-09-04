@@ -632,3 +632,43 @@
   outline: none;
   border-color: var(--color-brand);
 }
+
+/* ---- Topo das páginas de ajustes (voltar + título) ---- */
+.liz-float-settings-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.liz-float-settings-back {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.liz-float-settings-back:hover {
+  background: rgba(139, 92, 246, 0.08);
+  color: var(--color-brand-light);
+}
+
+.liz-float-settings-back svg {
+  width: 14px;
+  height: 14px;
+  transform: rotate(180deg);
+}
+
+.liz-float-settings-page-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
