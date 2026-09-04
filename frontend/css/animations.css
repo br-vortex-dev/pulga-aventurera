@@ -106,18 +106,6 @@
   90%  { transform: scale(1.02); }
   100% { transform: scale(1); }
 }
-@keyframes activeBarIn {
-  from { opacity: 0; transform: translateY(8px) scaleY(0); }
-  to   { opacity: 1; transform: translateY(-50%) scaleY(1); }
-}
-@keyframes activeBarGlow {
-  0%, 100% { opacity: 0.6; }
-  50%      { opacity: 1; }
-}
-@keyframes activeBarOut {
-  from { opacity: 1; transform: translateY(-50%) scaleY(1); }
-  to   { opacity: 0; transform: translateY(-50%) scaleY(0); }
-}
 @keyframes pillRelease {
   0%   { transform: scale(1); }
   40%  { transform: scale(0.96); }

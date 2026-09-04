@@ -89,34 +89,11 @@
   box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.3), 0 8px 24px rgba(139, 92, 246, 0.3);
   animation: pillClick 0.4s var(--ease-spring), pillGlow 0.6s ease-out;
 }
-.float-pill.is-active::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 26px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--color-brand-light), var(--color-brand-dark));
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
-  animation: activeBarIn 0.35s var(--ease-out-expo) forwards, activeBarGlow 2.5s ease-in-out 0.4s infinite;
-}
 .float-pill.is-active .float-pill-ico svg { animation: icoPop 0.45s var(--ease-spring); }
 
-/* Painel fechando: a barra ativa encolhe suave e o pill "respira" de volta */
+/* Painel fechando: o pill "respira" de volta e o ícone anima também ao sair */
 .float-pill.is-deactivating { animation: pillRelease 0.3s ease; }
-.float-pill.is-deactivating::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 50%;
-  width: 4px;
-  height: 26px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--color-brand-light), var(--color-brand-dark));
-  animation: activeBarOut 0.25s ease-in forwards;
-}
+.float-pill.is-deactivating .float-pill-ico svg { animation: icoPop 0.3s var(--ease-spring); }
 .float-pill:not(.is-active):active {
   animation: pillClick 0.35s var(--ease-spring);
 }
