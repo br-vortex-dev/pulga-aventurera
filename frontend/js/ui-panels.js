@@ -15,10 +15,13 @@ LizUI.clearActivePill = function() {
 };
 
 // ===================== COROA TOGGLE =====================
-LizUI._pulseMainCrown = function() {
-  this.el.crownToggle.classList.remove('is-pulsing');
-  void this.el.crownToggle.offsetWidth;
-  this.el.crownToggle.classList.add('is-pulsing');
+// Animação direcional: abrir = coroa "arremessa" os pills; fechar = "absorve".
+LizUI._crownBounce = function(mode) {
+  const crown = this.el.crownToggle;
+  if (!crown) return;
+  crown.classList.remove('is-opening', 'is-closing');
+  void crown.offsetWidth;
+  crown.classList.add(mode);
 };
 
 LizUI.toggleTools = function() {
@@ -27,8 +30,8 @@ LizUI.toggleTools = function() {
   const app = document.querySelector('.chat-app');
   if (!menu || !app) return;
   this._hideMainFloatPanel();
-  this._pulseMainCrown();
   const willCollapse = !menu.classList.contains('is-collapsed');
+  this._crownBounce(willCollapse ? 'is-closing' : 'is-opening');
   if (willCollapse) {
     menu.classList.remove('is-expanded'); menu.classList.add('is-collapsed');
     app.classList.add('is-menu-collapsed');

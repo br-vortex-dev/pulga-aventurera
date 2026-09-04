@@ -68,12 +68,12 @@
 }
 @keyframes toolCollapse {
   0%   { opacity: 1; transform: translate(0, 0) scale(1); filter: blur(0); }
-  100% { opacity: 0; transform: translate(-6px, -18px) scale(0.7); filter: blur(2px); }
+  100% { opacity: 0; transform: translate(-10px, -28px) scale(0.3); filter: blur(4px); }
 }
 @keyframes toolExpand {
-  0%   { opacity: 0; transform: translateX(-24px) scale(0.68); filter: blur(3px); }
-  55%  { opacity: 1; filter: blur(0); }
-  100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+  0%   { opacity: 0; transform: translate(-10px, -28px) scale(0.3); filter: blur(4px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1); filter: blur(0); }
 }
 @keyframes sepCollapse {
   0%   { opacity: 1; transform: scaleX(1); }

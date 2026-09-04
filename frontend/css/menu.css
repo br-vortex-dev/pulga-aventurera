@@ -121,7 +121,7 @@
   opacity: 0;
 }
 .floating-menu.is-collapsed .menu-tools-wrap .float-pill {
-  animation: toolCollapse 0.2s var(--ease-out-expo) forwards;
+  animation: toolCollapse 0.25s ease-in forwards;
 }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill {
   animation: toolExpand 0.45s var(--ease-spring) forwards;
@@ -132,13 +132,13 @@
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.18s; }
 .floating-menu.is-expanded .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0.24s; }
 
-/* Saída: micro-cascata de baixo pra cima, quase juntas —
-   afundam em direção à coroa. Fechar tem que ser mais rápido que abrir. */
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(1) { animation-delay: 0.07s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(2) { animation-delay: 0.05s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.035s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.02s; }
-.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0s; }
+/* Saída: os pills voam de volta pra coroa — o mais próximo (topo) some
+   primeiro e o resto segue em cascata. Fechar é mais rápido que abrir. */
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(1) { animation-delay: 0s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(2) { animation-delay: 0.03s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.06s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.09s; }
+.floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0.12s; }
 
 /* ---- Micro-animações no hover: cada ícone reage de um jeito ---- */
 .float-pill-ico svg { transition: transform 0.25s var(--ease-spring); }
