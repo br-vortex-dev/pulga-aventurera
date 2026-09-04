@@ -135,17 +135,6 @@ window.LizSettingsBind = {
           done();
         });
       }
-      const emailInput = panel.querySelector('#float-email-input');
-      if (emailInput) {
-        emailInput.addEventListener('change', () => {
-          const v = emailInput.value.trim().slice(0, 80);
-          if (v) localStorage.setItem('liz-user-email', v);
-          else localStorage.removeItem('liz-user-email');
-          const cardEmail = panel.querySelector('.account-email');
-          if (cardEmail) cardEmail.textContent = v || 'Sem email definido';
-          if (typeof LizChat !== 'undefined' && LizChat.toast) LizChat.toast('Email salvo');
-        });
-      }
     }
     if (pageId === 'chat') {
       const chatToggles = [
