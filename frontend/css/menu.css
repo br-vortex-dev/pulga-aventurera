@@ -139,3 +139,25 @@
 .floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(3) { animation-delay: 0.035s; }
 .floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(4) { animation-delay: 0.02s; }
 .floating-menu.is-collapsed .menu-tools-wrap .float-pill:nth-child(5) { animation-delay: 0s; }
+
+/* ---- Micro-animações no hover: cada ícone reage de um jeito ---- */
+.float-pill-ico svg { transition: transform 0.25s var(--ease-spring); }
+.float-pill:nth-child(1):hover .float-pill-ico svg { animation: icoSpin90 0.45s var(--ease-spring); }  /* Novo: o + gira */
+.float-pill:nth-child(2):hover .float-pill-ico svg { animation: icoBounce 0.55s var(--ease-spring); } /* Conversas: pulinho */
+.float-pill:nth-child(3):hover .float-pill-ico svg { animation: icoPulse 0.5s ease; }                 /* Mural: pulsa */
+.float-pill:nth-child(4):hover .float-pill-ico svg { animation: icoSpin 0.7s var(--ease-spring); }    /* Ajustes: engrenagem roda */
+.float-pill:nth-child(5):hover .float-pill-ico svg { animation: icoWiggle 0.5s ease; }                /* Conta: balança */
+
+/* Brilho que desliza por cima do pill no hover */
+.float-pill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.10) 46%, rgba(139, 92, 246, 0.22) 54%, transparent 68%);
+  background-repeat: no-repeat;
+  background-size: 60% 100%;
+  background-position: -130% 0;
+  pointer-events: none;
+}
+.float-pill:hover::after { animation: pillShine 0.8s ease; }

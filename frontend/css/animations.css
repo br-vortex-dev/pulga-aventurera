@@ -118,3 +118,40 @@
   0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
   50%      { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
 }
+
+/* ---- Micro-animações dos ícones do menu lateral (hover) ---- */
+@keyframes icoWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-10deg); }
+  75%      { transform: rotate(10deg); }
+}
+@keyframes icoBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40%      { transform: translateY(-3px) scale(1.08); }
+  60%      { transform: translateY(-1px) scale(1.04); }
+}
+@keyframes icoSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes icoSpin90 {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(90deg); }
+}
+@keyframes icoPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.18); }
+}
+@keyframes icoShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-2px) rotate(-4deg); }
+  40%      { transform: translateX(2px)  rotate(4deg); }
+  60%      { transform: translateX(-1.5px) rotate(-3deg); }
+  80%      { transform: translateX(1.5px)  rotate(3deg); }
+}
+
+/* Brilho deslizante que passa por cima do pill no hover */
+@keyframes pillShine {
+  0%   { background-position: -130% 0; }
+  100% { background-position: 230% 0; }
+}
