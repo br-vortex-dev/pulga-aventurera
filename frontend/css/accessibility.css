@@ -40,4 +40,14 @@
     animation-duration: 0.45s !important;
     animation-iteration-count: 1 !important;
   }
+
+  /* Exceção: as micro-animações de hover dos ícones do menu e o brilho
+     deslizante são curtas (< 1s) e sutis — sem risco vestibular, então
+     rodam sempre, mesmo com movimento reduzido. */
+  .float-pill:nth-child(1):hover .float-pill-ico svg { animation-duration: 0.45s !important; }
+  .float-pill:nth-child(2):hover .float-pill-ico svg { animation-duration: 0.55s !important; }
+  .float-pill:nth-child(3):hover .float-pill-ico svg { animation-duration: 0.5s !important; }
+  .float-pill:nth-child(4):hover .float-pill-ico svg { animation-duration: 0.7s !important; }
+  .float-pill:nth-child(5):hover .float-pill-ico svg { animation-duration: 0.5s !important; }
+  .float-pill:hover::after { animation-duration: 0.8s !important; }
 }
