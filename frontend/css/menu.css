@@ -145,7 +145,7 @@
 .float-pill:nth-child(1):hover .float-pill-ico svg { animation: icoSpin90 0.45s var(--ease-spring); }  /* Novo: o + gira */
 .float-pill:nth-child(2):hover .float-pill-ico svg { animation: icoBounce 0.55s var(--ease-spring); } /* Conversas: pulinho */
 .float-pill:nth-child(3):hover .float-pill-ico svg { animation: icoPulse 0.5s ease; }                 /* Mural: pulsa */
-.float-pill:nth-child(4):hover .float-pill-ico svg { animation: icoSpin 0.7s var(--ease-spring); }    /* Ajustes: engrenagem roda */
+.float-pill:nth-child(4):hover .float-pill-ico svg { animation: icoSpin 1s ease-in-out; }               /* Ajustes: engrenagem gira suave */
 .float-pill:nth-child(5):hover .float-pill-ico svg { animation: icoWiggle 0.5s ease; }                /* Conta: balança */
 
 /* Brilho que desliza por cima do pill no hover */
